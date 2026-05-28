@@ -130,14 +130,23 @@ def get_groq_response(prompt, context=""):
     return chat_completion.choices[0].message.content.strip()
 
 def extract_time_from_speech(text):
+    # First, try to find an explicit time like "3 PM" or "9:00"
     match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?', text, re.IGNORECASE)
     if match:
         hour = int(match.group(1))
         minute = int(match.group(2)) if match.group(2) else 0
         ampm = match.group(3).lower() if match.group(3) else ''
-        if ampm == 'p.m.' and hour != 12:
+        
+        # If no explicit AM/PM, infer from context
+        if not ampm:
+            if 'morning' in text or 'a.m.' in text or 'am' in text:
+                ampm = 'am'
+            elif 'afternoon' in text or 'evening' in text or 'p.m.' in text or 'pm' in text:
+                ampm = 'pm'
+        
+        if ampm in ('p.m.', 'pm') and hour != 12:
             hour += 12
-        elif ampm == 'a.m.' and hour == 12:
+        elif ampm in ('a.m.', 'am') and hour == 12:
             hour = 0
         return hour, minute
     return None, None
