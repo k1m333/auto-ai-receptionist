@@ -12,7 +12,7 @@ from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
 from groq import Groq
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2 import Credentials, service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
@@ -50,6 +50,21 @@ def list_calendars(service):
             break
 
 def get_calendar_service():
+    # Production: use service account from environment variable
+    creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if creds_json:
+        creds = service_account.Credentials.from_service_account_info(
+            json.loads(creds_json),
+            scopes=SCOPES
+        )
+        print("✅ Using Service Account for Calendar")
+        return build("calendar", "v3", credentials=creds)
+    
+    # Development fallback (OAuth with credentials.json)
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    
     creds = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -61,6 +76,7 @@ def get_calendar_service():
             creds = flow.run_local_server(port=0)
         with open("token.json", "w") as token:
             token.write(creds.to_json())
+    print("✅ Using OAuth for Calendar (Local Dev)")
     return build("calendar", "v3", credentials=creds)
 
 def check_availability(service, calendar_id, start_time, end_time):
