@@ -12,9 +12,10 @@ from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
 from groq import Groq
 from google.auth.transport.requests import Request
-from google.oauth2 import Credentials, service_account
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from google.oauth2 import service_account
 
 load_dotenv()
 app = Flask(__name__)
