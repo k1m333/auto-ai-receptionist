@@ -3,9 +3,9 @@ twilio==9.10.9
 groq==0.23.1
 python-dotenv==1.1.0
 pytz==2025.2
-google-auth==2.40.1
-google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
-google-api-python-client==2.163.0
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-api-python-client>=2.0.0
 pytest==9.0.3
 gunicorn==23.0.0
