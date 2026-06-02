@@ -109,6 +109,8 @@ def create_event(service, calendar_id, summary, start_datetime, end_datetime, de
     try:
         created_event = service.events().insert(calendarId=calendar_id, body=event).execute()
         print(f"✅ Event created: {created_event.get('htmlLink')}")
+        print(f"🔗 Event link: {created.get('htmlLink')}")
+        print(f"📧 Event ID: {created.get('id')}")
         return created_event
     except Exception as e:
         print(f"❌ Calendar API error: {e}")
