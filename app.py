@@ -55,15 +55,16 @@ def get_calendar_service():
     creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
     if creds_json:
         try:
+            import google.oauth2.service_account
             creds_dict = json.loads(creds_json)
-            creds = service_account.Credentials.from_service_account_info(
+            creds = google.oauth2.service_account.Credentials.from_service_account_info(
                 creds_dict,
                 scopes=["https://www.googleapis.com/auth/calendar"]
             )
             return build("calendar", "v3", credentials=creds)
         except Exception as e:
-            print(f"Service account init failed: {e}")
-    
+            print(f"Service account error: {e}")
+
     # Development fallback (OAuth with credentials.json)
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
