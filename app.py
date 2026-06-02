@@ -85,6 +85,9 @@ def get_calendar_service():
     return build("calendar", "v3", credentials=creds)
 
 def check_availability(service, calendar_id, start_time, end_time):
+    print(f"🔍 Checking availability for calendar: {calendar_id}")
+    print(f"📅 Time range: {start_time} to {end_time}")
+    
     body = {
         "timeMin": start_time,
         "timeMax": end_time,
@@ -92,10 +95,18 @@ def check_availability(service, calendar_id, start_time, end_time):
     }
     try:
         freebusy = service.freebusy().query(body=body).execute()
+        print(f"📊 FreeBusy response: {freebusy}")
+        
         busy_times = freebusy["calendars"][calendar_id].get("busy", [])
-        return len(busy_times) == 0
+        print(f"🚫 Busy times found: {busy_times}")
+        
+        is_free = len(busy_times) == 0
+        print(f"✅ Is free: {is_free}")
+        return is_free
     except Exception as e:
         print(f"❌ check_availability error: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def create_event(service, calendar_id, summary, start_datetime, end_datetime, description=""):
