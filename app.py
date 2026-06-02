@@ -220,7 +220,7 @@ def book_appointment(speech_result, session, call_sid):
     
     if not is_within_business_hours(start):
         service = get_calendar_service()
-        calendar_id = "primary"
+        calendar_id = os.environ.get("CALENDAR_ID", "primary")
         
         # Start searching from the requested time (or opening time if before open)
         next_slot = start
@@ -251,7 +251,7 @@ def book_appointment(speech_result, session, call_sid):
     end_str = end.isoformat()
     
     service = get_calendar_service()
-    calendar_id = "primary"
+    calendar_id = os.environ.get("CALENDAR_ID", "primary")
     
     event = create_event(
         service, calendar_id,
@@ -332,7 +332,7 @@ def voice():
                         end_str = end.isoformat()
                         
                         service = get_calendar_service()
-                        calendar_id = "primary"
+                        calendar_id = os.environ.get("CALENDAR_ID", "primary")
                         
                         event = create_event(
                             service, calendar_id,
