@@ -21,6 +21,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 pending_suggestions = {}
+# Temporary in-memory store for verification codes.
+# Use Redis or a database for Production.
+verification_codes = {}
 
 # ===========================
 # 1. API Clients
@@ -318,9 +321,54 @@ def voice():
             if len(digits) >= 10:
                 session["customer_phone"] = digits
                 session["awaiting_phone"] = False
-                response_text = f"Thanks, I have your number ending in {digits[-4:]}. How can I help you today?"
+                import random
+                code = str(random.randint(100000, 999999))
+                call_sid = request.values.get('CallSid')
+                verification_codes[call_sid] = {
+                    "code": code,
+                    "attempts": 0,
+                    "phone": digits
+                }
+                # Send SMS with code
+                try:
+                    twilio_client.messages.create(
+                        body=f"Your AI Receptionist verification code is: {code}. Please say it back to confirm your number.",
+                        from_=TWILIO_PHONE_NUMBER,
+                        to=digits
+                    )
+                    session["awaiting_verification"] = True
+                    response_text = f"I've sent a 6-digit code to {digits[-4:]}. Please say the code now."
+                except Exception as e:
+                    print(f"SMS failed: {e}")
+                    response_text = "I'm having trouble sending texts. Let's continue without verification."
+                    session["awaiting_verification"] = False
             else:
                 response_text = "I didn't catch that. Please say your phone number again."
+        
+        elif session.get("awaiting_verification"):
+            spoken_digits = re.sub(r'\D', '', speech_result)
+            call_sid = request.values.get('CallSid')
+            stored = verification_codes.get(call_sid)
+            
+            if stored and spoken_digits == stored["code"]:
+                # Verified successfully
+                session["awaiting_verification"] = False
+                del verification_codes[call_sid]
+                response_text = "Code verified successfully. How can I help you today?"
+            else:
+                if stored:
+                    stored["attempts"] += 1
+                    if stored["attempts"] >= 3:
+                        del verification_codes[call_sid]
+                        session["awaiting_verification"] = False
+                        response_text = "Too many failed attempts. Please call us directly."
+                    else:
+                        response_text = f"Sorry, that didn't match. You have {3 - stored['attempts']} attempts left. Please say the code sent to {stored['phone'][-4:]} again."
+                else:
+                    # No code found (timeout or error)
+                    session["awaiting_verification"] = False
+                    response_text = "Verification expired. Let's continue. How can I help?"
+        
         else:
             # Normal conversation
             faq_answer = answer_from_faq(speech_result)
@@ -384,7 +432,7 @@ def voice():
     gather = Gather(input="speech", timeout=10, action="/voice", method="POST")
     gather.say(response_text, voice="Polly.Joanna")
     resp.append(gather)
-    resp.redirect("/voice", method="POST")
+    # Don't redirect back to /voice in the same call, let gather handle it
     return Response(str(resp), mimetype="text/xml")
 
 if __name__ == "__main__":
