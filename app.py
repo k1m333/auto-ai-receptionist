@@ -10,6 +10,7 @@ import pytz
 from flask import Flask, request, Response, session
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
+from twilio.request_validator import RequestValidator
 from groq import Groq
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
@@ -292,6 +293,17 @@ BOOKING_KEYWORDS = ["appointment", "schedule", "book"] + AFFIRMATIVE
 
 @app.route("/voice", methods=["POST"])
 def voice():
+    # === TWILIO SIGNATURE VERIFICATION ===
+    validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN"))
+    url = request.url
+    body = request.get_data(as_text=True)
+    signature = request.headers.get('X-Twilio-Signature', '')
+    
+    if not validator.validate(url, body, signature):
+        print(f"❌ Invalid Twilio signature from {request.remote_addr}")
+        return Response("Forbidden", status=403)
+    print("✅ Twilio signature verified")
+    # === END VERIFICATION ===
     speech_result = request.form.get("SpeechResult", "")
     speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
     print(f"DEBUG: speech_result = '{speech_result}'")
