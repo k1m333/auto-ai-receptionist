@@ -294,16 +294,20 @@ BOOKING_KEYWORDS = ["appointment", "schedule", "book"] + AFFIRMATIVE
 @app.route("/voice", methods=["POST"])
 def voice():
     # === TWILIO SIGNATURE VERIFICATION ===
+    from twilio.request_validator import RequestValidator
+    
     validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN"))
     url = request.url
-    body = request.get_data(as_text=True)
+    # Get the POST data as a dictionary (not raw string)
+    params = request.form.to_dict()
     signature = request.headers.get('X-Twilio-Signature', '')
     
-    if not validator.validate(url, body, signature):
+    if not validator.validate(url, params, signature):
         print(f"❌ Invalid Twilio signature from {request.remote_addr}")
         return Response("Forbidden", status=403)
     print("✅ Twilio signature verified")
     # === END VERIFICATION ===
+
     speech_result = request.form.get("SpeechResult", "")
     speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
     print(f"DEBUG: speech_result = '{speech_result}'")
