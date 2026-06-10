@@ -17,6 +17,11 @@ from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+from collections import defaultdict
+import time
+
+# Rate limiting: caller_id -> List of timestamps
+rate_limit_store = defaultdict(list)
 
 load_dotenv()
 app = Flask(__name__)
@@ -189,6 +194,17 @@ def extract_time_from_speech(text):
         return hour, minute
     return None, None
 
+def is_rate_limited(caller_id, limit=10, window_seconds=60):
+    now = time.time()
+    timestamps = rate_limit_store[caller_id]
+    # Remove timestamps outside the window
+    while timestamps and timestamps[0] < now - window_seconds:
+        timestamps.pop(0)
+    if len(timestamps) >= limit:
+        return True
+    timestamps.append(now)
+    return False
+
 # ===========================
 # 5. SMS Helpers
 # ===========================
@@ -307,6 +323,15 @@ def voice():
         return Response("Forbidden", status=403)
     print("✅ Twilio signature verified")
     # === END VERIFICATION ===
+
+    # === RATE LIMITING ===
+    caller_id = request.form.get('Caller', 'unknown')
+    if is_rate_limited(caller_id):
+        resp = VoiceResponse()
+        resp.say("Too many requests. Please try again later.", voice="Polly.Joanna")
+        resp.hangup()
+        return Response(str(resp), mimetype="text/xml")
+    # === END RATE LIMITING ===
 
     speech_result = request.form.get("SpeechResult", "")
     speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
