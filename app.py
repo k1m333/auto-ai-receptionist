@@ -476,5 +476,22 @@ def voice():
     # Don't redirect back to /voice in the same call, let gather handle it
     return Response(str(resp), mimetype="text/xml")
 
+@app.route("/privacy", methods=["GET"])
+def privacy():
+    return """
+    <h1>Privacy Policy</h1>
+    <p>AI Receptionist collects your phone number solely to send verification codes and appointment confirmations. No data is shared with third parties. Messages are transactional only (2FA). Reply STOP to opt out.</p>
+    <p>Last updated: June 10, 2026</p>
+    """
+
+@app.route("/terms", methods=["GET"])
+def terms():
+    return """
+    <h1>Terms of Service</h1>
+    <p>By using AI Receptionist, you agree to receive transactional SMS messages for identity verification and appointment booking. Message frequency varies. Standard rates may apply.</p>
+    <p>For support, call [your business number].</p>
+    <p>Last updated: June 10, 2026</p>
+    """
+
 if __name__ == "__main__":
     app.run(port=5000, debug=False)
