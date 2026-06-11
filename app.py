@@ -489,7 +489,6 @@ def terms():
     return """
     <h1>Terms of Service</h1>
     <p>By using AI Receptionist, you agree to receive transactional SMS messages for identity verification and appointment booking. Message frequency varies. Standard rates may apply.</p>
-    <p>For support, call +19783572799.</p>
     <p>Last updated: June 10, 2026</p>
     """
 
