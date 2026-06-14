@@ -119,6 +119,8 @@ def check_availability(service, calendar_id, start_time, end_time):
         return False
 
 def create_event(service, calendar_id, summary, start_datetime, end_datetime, description=""):
+    # TODO: Add idempotency key to prevent double-booking
+    # Use composite key (user_id, event_id) with unique constraint in DB
     print(f"🟢 Attempting to create event with start={start_datetime}, end={end_datetime}")
     event = {
         "summary": summary,
