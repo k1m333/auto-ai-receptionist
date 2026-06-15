@@ -335,6 +335,33 @@ def voice():
         return Response(str(resp), mimetype="text/xml")
     # === END RATE LIMITING ===
 
+    # === CALL LOGGING (SQLite) ===
+    import sqlite3
+    from datetime import datetime
+
+    caller_id = request.form.get('Caller', 'unknown')
+    call_sid = request.values.get('CallSid', 'unknown')
+    timestamp = datetime.now().isoformat()
+
+    conn = sqlite3.connect('calls.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS call_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            call_sid TEXT UNIQUE,
+            caller TEXT,
+            timestamp TEXT,
+            outcome TEXT
+        )
+    ''')
+    cursor.execute(
+        'INSERT OR IGNORE INTO call_logs (call_sid, caller, timestamp, outcome) VALUES (?, ?, ?, ?)',
+        (call_sid, caller_id, timestamp, 'started')
+    )
+    conn.commit()
+    conn.close()
+    # === END CALL LOGGING ===
+
     speech_result = request.form.get("SpeechResult", "")
     speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
     print(f"DEBUG: speech_result = '{speech_result}'")
