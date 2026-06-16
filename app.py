@@ -19,6 +19,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from collections import defaultdict
 import time
+import sqlite3
 
 # Rate limiting: caller_id -> List of timestamps
 rate_limit_store = defaultdict(list)
@@ -285,7 +286,18 @@ def book_appointment(speech_result, session, call_sid):
     
     service = get_calendar_service()
     calendar_id = os.environ.get("CALENDAR_ID", "primary")
-    
+
+    # === IDEMPOTENCY CHECK ===
+    idempotency_key = f"{call_sid}_booking"
+    conn = sqlite3.connect('calls.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
+    row = cursor.fetchone()
+    if row:
+        conn.close()
+        return row[0]  # Already processed, return cached result
+    # === END IDEMPOTENCY CHECK ===
+
     event = create_event(
         service, calendar_id,
         f"Appointment with {session.get('caller_name', 'Customer')}",
@@ -295,9 +307,20 @@ def book_appointment(speech_result, session, call_sid):
     
     if event and 'id' in event:
         customer_phone = session.get("customer_phone")
+        response_text = f"I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
+        
+        # === STORE IDEMPOTENCY RESULT ===
+        cursor.execute(
+            "INSERT OR IGNORE INTO idempotency_keys (idempotency_key, booking_result, created_at) VALUES (?, ?, ?)",
+            (idempotency_key, response_text, datetime.now().isoformat())
+        )
+        conn.commit()
+        conn.close()
+        # === END STORE ===
+        
         if customer_phone:
             send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
-        return f"I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
+        return response_text
     else:
         return "I'm sorry, there was a problem booking your appointment. Please call us directly."
 
@@ -336,10 +359,6 @@ def voice():
     # === END RATE LIMITING ===
 
     # === CALL LOGGING (SQLite) ===
-    import sqlite3
-    from datetime import datetime
-
-    caller_id = request.form.get('Caller', 'unknown')
     call_sid = request.values.get('CallSid', 'unknown')
     timestamp = datetime.now().isoformat()
 
@@ -352,6 +371,13 @@ def voice():
             caller TEXT,
             timestamp TEXT,
             outcome TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS idempotency_keys (
+            idempotency_key TEXT PRIMARY KEY,
+            booking_result TEXT,
+            created_at TIMESTAMP
         )
     ''')
     cursor.execute(
@@ -454,32 +480,44 @@ def voice():
                 if suggested and any(word in speech_result for word in AFFIRMATIVE):
                     pending_suggestions.pop(call_sid, None)
                     print("DEBUG: User accepted suggested time")
-                    try:
-                        start = datetime.fromisoformat(suggested)
-                        end = start + timedelta(minutes=15)
-                        start_str = start.isoformat()
-                        end_str = end.isoformat()
-                        
-                        service = get_calendar_service()
-                        calendar_id = os.environ.get("CALENDAR_ID", "primary")
-                        
-                        event = create_event(
-                            service, calendar_id,
-                            f"Appointment with {session.get('caller_name', 'Customer')}",
-                            start_str, end_str,
-                            f"Booked via AI assistant (suggested time). Caller said: {speech_result}"
-                        )
-                        
-                        if event and 'id' in event:
-                            customer_phone = session.get("customer_phone")
-                            if customer_phone:
-                                send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
-                            response_text = f"Great! I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
-                        else:
-                            response_text = "I'm sorry, there was a problem booking that time. Please call us directly."
-                    except Exception as e:
-                        print(f"DEBUG: Exception in yes branch: {e}")
-                        response_text = "I'm sorry, I had trouble booking that time. Please call us directly."
+                    # === IDEMPOTENCY CHECK ===
+                    idempotency_key = f"{call_sid}_suggested_booking"
+                    conn = sqlite3.connect('calls.db')
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
+                    row = cursor.fetchone()
+                    if row:
+                        conn.close()
+                        response_text = row[0]
+                        # Skip to response (don't create duplicate event)
+                    else:
+                        # === END IDEMPOTENCY CHECK ===
+                        try:
+                            start = datetime.fromisoformat(suggested)
+                            end = start + timedelta(minutes=15)
+                            start_str = start.isoformat()
+                            end_str = end.isoformat()
+                            
+                            service = get_calendar_service()
+                            calendar_id = os.environ.get("CALENDAR_ID", "primary")
+                            
+                            event = create_event(
+                                service, calendar_id,
+                                f"Appointment with {session.get('caller_name', 'Customer')}",
+                                start_str, end_str,
+                                f"Booked via AI assistant (suggested time). Caller said: {speech_result}"
+                            )
+                            
+                            if event and 'id' in event:
+                                customer_phone = session.get("customer_phone")
+                                if customer_phone:
+                                    send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
+                                response_text = f"Great! I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
+                            else:
+                                response_text = "I'm sorry, there was a problem booking that time. Please call us directly."
+                        except Exception as e:
+                            print(f"DEBUG: Exception in yes branch: {e}")
+                            response_text = "I'm sorry, I had trouble booking that time. Please call us directly."
                 elif "no" in speech_result:
                     pending_suggestions.pop(call_sid, None)
                     print("DEBUG: User rejected suggested time")
