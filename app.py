@@ -538,7 +538,7 @@ def voice():
     # Build Twilio response (keep call open)
     resp = VoiceResponse()
     gather = Gather(input="speech", timeout=10, action="/voice", method="POST")
-    gather.say(response_text, voice="Polly.Joanna")
+    gather.say(response_text, voice="Polly.Salli")
     resp.append(gather)
     # Don't redirect back to /voice in the same call, let gather handle it
     return Response(str(resp), mimetype="text/xml")
