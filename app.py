@@ -250,7 +250,7 @@ def book_appointment(speech_result, session, call_sid):
     if requested_hour is not None:
         start = now.replace(hour=requested_hour, minute=requested_minute, second=0, microsecond=0) + timedelta(days=days_ahead)
     else:
-        start = now.replace(hour=13, minute=30, second=0, microsecond=0) + timedelta(days=days_ahead)
+        return "What time would you like to book?"
     
     if not is_within_business_hours(start):
         service = get_calendar_service()
