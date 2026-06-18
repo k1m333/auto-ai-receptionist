@@ -353,7 +353,7 @@ def voice():
     caller_id = request.form.get('Caller', 'unknown')
     if is_rate_limited(caller_id):
         resp = VoiceResponse()
-        resp.say("Too many requests. Please try again later.", voice="Polly.Joanna")
+        resp.say("Too many requests. Please try again later.", voice="Polly.Salli")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     # === END RATE LIMITING ===
@@ -395,7 +395,7 @@ def voice():
     # Goodbye detection
     if speech_result and any(phrase in speech_result.lower() for phrase in GOODBYE_PHRASES):
         resp = VoiceResponse()
-        resp.say("Thank you for calling. Have a great day!", voice="Polly.Joanna")
+        resp.say("Thank you for calling. Have a great day!", voice="Polly.Salli")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     
@@ -591,7 +591,7 @@ def voice():
     # Build Twilio response
     resp = VoiceResponse()
     gather = Gather(input="speech", timeout=10, action="/voice", method="POST")
-    gather.say(response_text, voice="Polly.Joanna")
+    gather.say(response_text, voice="Polly.Salli")
     resp.append(gather)
     return Response(str(resp), mimetype="text/xml")
 
