@@ -288,7 +288,8 @@ def book_appointment(speech_result, session, call_sid):
     calendar_id = os.environ.get("CALENDAR_ID", "primary")
 
     # === IDEMPOTENCY CHECK ===
-    idempotency_key = f"{call_sid}_booking"
+    phone = session.get("customer_phone", "unknown")
+    idempotency_key = f"{call_sid}_{start.strftime('%Y%m%d_%H%M')}"
     conn = sqlite3.connect('calls.db')
     cursor = conn.cursor()
     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
@@ -353,7 +354,7 @@ def voice():
     caller_id = request.form.get('Caller', 'unknown')
     if is_rate_limited(caller_id):
         resp = VoiceResponse()
-        resp.say("Too many requests. Please try again later.", voice="Polly.Joanna")
+        resp.say("Too many requests. Please try again later.", voice="Polly.Salli")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     # === END RATE LIMITING ===
@@ -395,7 +396,7 @@ def voice():
     # Goodbye detection
     if speech_result and any(phrase in speech_result.lower() for phrase in GOODBYE_PHRASES):
         resp = VoiceResponse()
-        resp.say("Thank you for calling. Have a great day!", voice="Polly.Joanna")
+        resp.say("Thank you for calling. Have a great day!", voice="Polly.Salli")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     
@@ -481,7 +482,8 @@ def voice():
                     pending_suggestions.pop(call_sid, None)
                     print("DEBUG: User accepted suggested time")
                     # === IDEMPOTENCY CHECK ===
-                    idempotency_key = f"{call_sid}_suggested_booking"
+                    phone = session.get("customer_phone", "unknown")
+                    idempotency_key = f"{call_sid}_{start.strftime('%Y%m%d_%H%M')}"
                     conn = sqlite3.connect('calls.db')
                     cursor = conn.cursor()
                     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
