@@ -340,7 +340,6 @@ def voice():
     
     validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN"))
     url = request.url
-    # Get the POST data as a dictionary (not raw string)
     params = request.form.to_dict()
     signature = request.headers.get('X-Twilio-Signature', '')
     
@@ -354,7 +353,7 @@ def voice():
     caller_id = request.form.get('Caller', 'unknown')
     if is_rate_limited(caller_id):
         resp = VoiceResponse()
-        resp.say("Too many requests. Please try again later.", voice="Polly.Salli")
+        resp.say("Too many requests. Please try again later.", voice="Polly.Joanna")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     # === END RATE LIMITING ===
@@ -396,7 +395,7 @@ def voice():
     # Goodbye detection
     if speech_result and any(phrase in speech_result.lower() for phrase in GOODBYE_PHRASES):
         resp = VoiceResponse()
-        resp.say("Thank you for calling. Have a great day!", voice="Polly.Salli")
+        resp.say("Thank you for calling. Have a great day!", voice="Polly.Joanna")
         resp.hangup()
         return Response(str(resp), mimetype="text/xml")
     
@@ -418,20 +417,17 @@ def voice():
             caller_id = request.form.get('Caller', '')
             clean_caller = re.sub(r'\D', '', caller_id)
             
-            # If we haven't asked about caller ID yet and it's valid
             if not session.get("caller_id_confirmed") and len(clean_caller) >= 10 and not session.get("asked_caller_id"):
                 session["detected_caller"] = clean_caller
                 session["asked_caller_id"] = True
                 response_text = f"I see you're calling from {clean_caller[-4:]}. Shall I send the verification code there? Say yes or no."
             
             elif session.get("asked_caller_id") and any(word in speech_result for word in AFFIRMATIVE):
-                # User said yes to detected caller ID
                 digits = session.get("detected_caller", "")
                 if len(digits) >= 10:
                     session["customer_phone"] = digits
                     session["awaiting_phone"] = False
                     session["asked_caller_id"] = False
-                    # Send SMS code
                     import random
                     code = str(random.randint(100000, 999999))
                     call_sid = request.values.get('CallSid')
@@ -454,13 +450,11 @@ def voice():
                         session["awaiting_verification"] = False
             
             elif session.get("asked_caller_id") and "no" in speech_result:
-                # User said no to detected caller ID
                 session["asked_caller_id"] = False
                 session["caller_id_confirmed"] = False
                 response_text = "Okay. Please say your phone number now."
             
             elif not session.get("asked_caller_id") and len(digits) >= 10:
-                # Manual entry (fallback)
                 session["customer_phone"] = digits
                 session["awaiting_phone"] = False
                 import random
@@ -486,13 +480,13 @@ def voice():
             
             else:
                 response_text = "I didn't catch that. Please say your phone number again."
+        
         elif session.get("awaiting_verification"):
             spoken_digits = re.sub(r'\D', '', speech_result)
             call_sid = request.values.get('CallSid')
             stored = verification_codes.get(call_sid)
             
             if stored and spoken_digits == stored["code"]:
-                # Verified successfully
                 session["awaiting_verification"] = False
                 del verification_codes[call_sid]
                 response_text = "Code verified successfully. How can I help you today?"
@@ -506,7 +500,6 @@ def voice():
                     else:
                         response_text = f"Sorry, that didn't match. You have {3 - stored['attempts']} attempts left. Please say the code sent to {stored['phone'][-4:]} again."
                 else:
-                    # No code found (timeout or error)
                     session["awaiting_verification"] = False
                     response_text = "Verification expired. Let's continue. How can I help?"
         
@@ -526,8 +519,9 @@ def voice():
                     pending_suggestions.pop(call_sid, None)
                     print("DEBUG: User accepted suggested time")
                     # === IDEMPOTENCY CHECK ===
+                    start = datetime.fromisoformat(suggested)
                     phone = session.get("customer_phone", "unknown")
-                    idempotency_key = f"{call_sid}_{start.strftime('%Y%m%d_%H%M')}"
+                    idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
                     conn = sqlite3.connect('calls.db')
                     cursor = conn.cursor()
                     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
@@ -535,11 +529,8 @@ def voice():
                     if row:
                         conn.close()
                         response_text = row[0]
-                        # Skip to response (don't create duplicate event)
                     else:
-                        # === END IDEMPOTENCY CHECK ===
                         try:
-                            start = datetime.fromisoformat(suggested)
                             end = start + timedelta(minutes=15)
                             start_str = start.isoformat()
                             end_str = end.isoformat()
@@ -559,18 +550,34 @@ def voice():
                                 if customer_phone:
                                     send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
                                 response_text = f"Great! I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
+                                cursor.execute(
+                                    "INSERT OR IGNORE INTO idempotency_keys (idempotency_key, booking_result, created_at) VALUES (?, ?, ?)",
+                                    (idempotency_key, response_text, datetime.now().isoformat())
+                                )
+                                conn.commit()
                             else:
                                 response_text = "I'm sorry, there was a problem booking that time. Please call us directly."
                         except Exception as e:
                             print(f"DEBUG: Exception in yes branch: {e}")
                             response_text = "I'm sorry, I had trouble booking that time. Please call us directly."
+                        conn.close()
+                    session["suggestion_handled"] = True
+                
                 elif "no" in speech_result:
                     pending_suggestions.pop(call_sid, None)
                     print("DEBUG: User rejected suggested time")
-                    response_text = "No problem. What time would work for you?"
+                    response_text = "No problem. What time would you work for you?"
+                    session["suggestion_handled"] = True
+                
                 else:
-                    print("DEBUG: No pending suggestion, calling book_appointment")
-                    response_text = book_appointment(speech_result, session, call_sid)
+                    # Only call book_appointment if we haven't just handled a suggestion
+                    if session.get("suggestion_handled"):
+                        session["suggestion_handled"] = False
+                        # Don't re-enter booking – just keep response_text as is
+                        pass
+                    else:
+                        print("DEBUG: No pending suggestion, calling book_appointment")
+                        response_text = book_appointment(speech_result, session, call_sid)
             else:
                 prompt = f"The caller said: '{speech_result}'. Respond helpfully. Keep it brief."
                 response_text = get_groq_response(prompt, conversation_history)
@@ -581,12 +588,11 @@ def voice():
         session["history"] += f"\nUser: {speech_result}\nAI: {response_text}"
         session["last_prompt"] = response_text
     
-    # Build Twilio response (keep call open)
+    # Build Twilio response
     resp = VoiceResponse()
     gather = Gather(input="speech", timeout=10, action="/voice", method="POST")
-    gather.say(response_text, voice="Polly.Salli")
+    gather.say(response_text, voice="Polly.Joanna")
     resp.append(gather)
-    # Don't redirect back to /voice in the same call, let gather handle it
     return Response(str(resp), mimetype="text/xml")
 
 @app.route("/privacy", methods=["GET"])
