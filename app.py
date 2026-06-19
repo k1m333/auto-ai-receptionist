@@ -144,6 +144,23 @@ def create_event(service, calendar_id, summary, start_datetime, end_datetime, de
         traceback.print_exc()
         return None
 
+def generate_calendar_link(summary, start_dt, end_dt, description=""):
+    # Format dates as YYYYMMDDTHHMMSS
+    start_str = start_dt.strftime('%Y%m%dT%H%M%S')
+    end_str = end_dt.strftime('%Y%m%dT%H%M%S')
+    
+    # URL encode description
+    encoded_desc = description.replace(" ", "+")
+    
+    link = (f"https://www.google.com/calendar/render?"
+            f"action=TEMPLATE"
+            f"&text={summary.replace(' ', '+')}"
+            f"&dates={start_str}/{end_str}"
+            f"&details={encoded_desc}"
+            f"&sf=true"
+            f"&output=xml")
+    return link
+
 # ===========================
 # 3. FAQ Helpers
 # ===========================
@@ -157,16 +174,20 @@ def load_faq():
         return {}
 
 def answer_from_faq(user_input):
+    # Check cache first
     if user_input in faq_cache:
         return faq_cache[user_input]
+    
     faq = load_faq()
     user_lower = user_input.lower().strip()
     for key, answer in faq.items():
         if key in user_lower:
+            faq_cache[user_input] = answer
             return answer
-    faq_cache[user_input] = answer
+    
+    # If no match, store None to avoid repeated lookups
+    faq_cache[user_input] = None
     return None
-
 # ===========================
 # 4. AI Response Helpers
 # ===========================
@@ -218,17 +239,20 @@ def is_rate_limited(caller_id, limit=10, window_seconds=60):
 # 5. SMS Helpers
 # ===========================
 
-def send_sms(to_number, appointment_time):
+def send_sms(to_number, appointment_time, calendar_link=None):
     try:
+        body = f"Your appointment has been confirmed for {appointment_time}. Thanks for choosing our shop!"
+        if calendar_link:
+            body += f"\n\nAdd to your calendar: {calendar_link}"
+        
         message = twilio_client.messages.create(
-            body=f"Your appointment has been confirmed for {appointment_time}. Thanks for choosing our shop!",
+            body=body,
             from_=TWILIO_PHONE_NUMBER,
             to=to_number
         )
         print(f"SMS sent: {message.sid}")
     except Exception as e:
         print(f"Failed to send SMS: {e}")
-        # Print the full error details
         if hasattr(e, 'status_code'):
             print(f"HTTP status: {e.status_code}")
         if hasattr(e, 'msg'):
@@ -316,6 +340,14 @@ def book_appointment(speech_result, session, call_sid):
         customer_phone = session.get("customer_phone")
         response_text = f"I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
         
+        # Generate calendar invite link
+        calendar_link = generate_calendar_link(
+            f"Appointment with {session.get('caller_name', 'Customer')}",
+            start,
+            end,
+            "Booked via AI Receptionist"
+        )
+        
         # === STORE IDEMPOTENCY RESULT ===
         cursor.execute(
             "INSERT OR IGNORE INTO idempotency_keys (idempotency_key, booking_result, created_at) VALUES (?, ?, ?)",
@@ -326,7 +358,7 @@ def book_appointment(speech_result, session, call_sid):
         # === END STORE ===
         
         if customer_phone:
-            send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
+            send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'), calendar_link)
         return response_text
     else:
         return "I'm sorry, there was a problem booking your appointment. Please call us directly."
