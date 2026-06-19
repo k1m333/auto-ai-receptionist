@@ -20,6 +20,9 @@ from google.oauth2 import service_account
 from collections import defaultdict
 import time
 import sqlite3
+import threading
+
+faq_cache = {}
 
 # Rate limiting: caller_id -> List of timestamps
 rate_limit_store = defaultdict(list)
@@ -154,11 +157,14 @@ def load_faq():
         return {}
 
 def answer_from_faq(user_input):
+    if user_input in faq_cache:
+        return faq_cache[user_input]
     faq = load_faq()
     user_lower = user_input.lower().strip()
     for key, answer in faq.items():
         if key in user_lower:
             return answer
+    faq_cache[user_input] = answer
     return None
 
 # ===========================
@@ -359,33 +365,37 @@ def voice():
     # === END RATE LIMITING ===
 
     # === CALL LOGGING (SQLite) ===
+    # === CALL LOGGING (SQLite) ===
     call_sid = request.values.get('CallSid', 'unknown')
     timestamp = datetime.now().isoformat()
 
-    conn = sqlite3.connect('calls.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS call_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            call_sid TEXT UNIQUE,
-            caller TEXT,
-            timestamp TEXT,
-            outcome TEXT
+    def log_call_async():
+        conn = sqlite3.connect('calls.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS call_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                call_sid TEXT UNIQUE,
+                caller TEXT,
+                timestamp TEXT,
+                outcome TEXT
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS idempotency_keys (
+                idempotency_key TEXT PRIMARY KEY,
+                booking_result TEXT,
+                created_at TIMESTAMP
+            )
+        ''')
+        cursor.execute(
+            'INSERT OR IGNORE INTO call_logs (call_sid, caller, timestamp, outcome) VALUES (?, ?, ?, ?)',
+            (call_sid, caller_id, timestamp, 'started')
         )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS idempotency_keys (
-            idempotency_key TEXT PRIMARY KEY,
-            booking_result TEXT,
-            created_at TIMESTAMP
-        )
-    ''')
-    cursor.execute(
-        'INSERT OR IGNORE INTO call_logs (call_sid, caller, timestamp, outcome) VALUES (?, ?, ?, ?)',
-        (call_sid, caller_id, timestamp, 'started')
-    )
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+
+    threading.Thread(target=log_call_async).start()
     # === END CALL LOGGING ===
 
     speech_result = request.form.get("SpeechResult", "")
