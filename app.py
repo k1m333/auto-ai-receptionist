@@ -710,6 +710,7 @@ def metrics():
     except Exception as e:
         return {"error": str(e), "status": "error"}, 500
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(port=5000, debug=False)
