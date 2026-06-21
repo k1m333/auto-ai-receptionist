@@ -652,6 +652,40 @@ def terms():
     <p>By using AI Receptionist, you agree to receive transactional SMS messages for identity verification and appointment booking. Message frequency varies. Standard rates may apply.</p>
     <p>Last updated: June 10, 2026</p>
     """
+@app.route("/metrics", methods=["GET"])
+def metrics():
+    # Check for the key parameter in the URL
+    if request.args.get('key') != os.getenv("METRICS_KEY"):
+        return {"error": "Unauthorized"}, 401
+    try:
+        conn = sqlite3.connect('calls.db')
+        cursor = conn.cursor()
+        
+        # Total calls
+        cursor.execute("SELECT COUNT(*) FROM call_logs")
+        total_calls = cursor.fetchone()[0]
+        
+        # Total bookings (from idempotency table)
+        cursor.execute("SELECT COUNT(*) FROM idempotency_keys")
+        total_bookings = cursor.fetchone()[0]
+        
+        # Bookings in last 7 days
+        cursor.execute("""
+            SELECT COUNT(*) FROM idempotency_keys 
+            WHERE created_at >= datetime('now', '-7 days')
+        """)
+        bookings_7d = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return {
+            "total_calls": total_calls,
+            "total_bookings": total_bookings,
+            "bookings_last_7_days": bookings_7d,
+            "status": "ok"
+        }
+    except Exception as e:
+        return {"error": str(e), "status": "error"}, 500
 
 if __name__ == "__main__":
     app.run(port=5000, debug=False)
