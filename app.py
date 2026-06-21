@@ -35,6 +35,29 @@ pending_suggestions = {}
 # Use Redis or a database for Production.
 verification_codes = {}
 
+def init_db():
+    conn = sqlite3.connect('calls.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS call_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            call_sid TEXT UNIQUE,
+            caller TEXT,
+            timestamp TEXT,
+            outcome TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS idempotency_keys (
+            idempotency_key TEXT PRIMARY KEY,
+            booking_result TEXT,
+            created_at TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    print("✅ Database initialized")
+
 # ===========================
 # 1. API Clients
 # ===========================
@@ -688,4 +711,5 @@ def metrics():
         return {"error": str(e), "status": "error"}, 500
 
 if __name__ == "__main__":
+    init_db()
     app.run(port=5000, debug=False)
