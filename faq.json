@@ -1,15 +1,45 @@
 {
-  "hours": "We are open Monday to Friday, 7:30 AM to 5:00 PM, and Saturday 8:30 AM to 5:00 PM. We are closed on Sunday.",
-  "appointment required": "Most services require an appointment. Please call ahead or use our online scheduler to book a time.",
-  "walk in": "Walk‑ins are welcome during business hours. Same‑day service may be possible, but most walk‑ins will require leaving the car overnight. A loaner vehicle can be provided if needed.",
-  "loaner vehicle": "Yes, we can provide a loaner vehicle if your car needs to stay overnight. Please ask when you drop off your car.",
-  "oil change": "An oil change costs $49.95 and takes about 30 minutes. Walk‑ins are welcome, but an appointment guarantees a shorter wait.",
-  "battery": "A new battery costs $299, including installation. Appointment recommended.",
-  "transmission fluid": "Transmission fluid service costs $249. Appointment required.",
-  "power steering fluid": "Power steering fluid service costs $1000. Appointment required.",
-  "labor rate": "Our labor rate is $235 per hour.",
-  "tire rotation": "Tire rotation costs $29.95 and takes about 20 minutes. Appointment recommended.",
-  "brake inspection": "A brake inspection is free and takes about 15 minutes. Appointment required.",
-  "phone": "You can reach our service desk at (555) 123-4567.",
-  "schedule appointment": "To schedule an appointment, please tell me your preferred date and time. I'll check availability and book it for you."
+  "what services do you offer": "We offer Minor Service (5,000 mile intervals) and Major Service (30,000/60,000/90,000/120,000 miles, due every 3 years or 30,000 miles). We also offer Ala Carte services based on inspection needs.",
+  
+  "what is included in minor service": "Minor Service includes: change engine oil and filter (5qts. non-synthetic oil), rotate tires, video inspection, and inspection of: brakes, automatic/manual transmission fluid, engine coolant, all lights/horn/wipers, battery, brake fluid, power steering fluid, tire pressure and wear, washer fluid, fuel lines/hoses/cap, brake lines/hoses, steering operation, suspension and ball joints, wheel bearings, fluid leaks, and drive belts. Price: $139.95 plus tax, supplies, and hazardous waste.",
+  
+  "what is included in major service": "Major Service (30k/60k/90k/120k miles) includes: change engine oil and filter (5qts. non-synthetic oil), rotate tires, brake system fluid exchange, cooling system fluid exchange, replace cabin air filter, replace engine air filter, test battery, video inspection, plus all Minor Service inspections. Also includes inspection of: A/C performance, fuel tank air filter, and clutch operation (manual transmission). Price: $639.95 plus tax, supplies, and hazardous waste.",
+  
+  "how much is an oil change": "Our Minor Service includes an oil change (5qts. non-synthetic) plus tire rotation and full inspection for $139.95 plus tax, supplies, and hazardous waste.",
+  
+  "how much is a tire rotation": "Tire rotation is $39.95 as an Ala Carte service.",
+  
+  "how much is a brake fluid exchange": "Brake system fluid exchange is $204.95 as an Ala Carte service.",
+  
+  "how much is a coolant flush": "Cooling system fluid exchange is $209.95 as an Ala Carte service.",
+  
+  "how much is a transmission fluid change": "Automatic transmission fluid exchange is $249.95. Manual transmission fluid exchange is $169.95.",
+  
+  "how much is a battery": "12V Battery replacement is $299.95 as an Ala Carte service.",
+  
+  "how much are spark plugs": "Spark plugs (4 cylinder) are $399.95 as an Ala Carte service.",
+  
+  "how much is an alignment": "Four wheel alignment is $179.95 as an Ala Carte service.",
+  
+  "how much is a cabin air filter": "Cabin air filter replacement is $75.95 as an Ala Carte service.",
+  
+  "how much is an engine air filter": "Engine air filter replacement is $69.95 (non-turbo) or $85.95 (turbo).",
+  
+  "how much is power steering fluid exchange": "Power steering fluid exchange is $189.95 as an Ala Carte service.",
+  
+  "how much is differential service": "Front/Rear differential service (with Skyactive) is $169.95 as an Ala Carte service.",
+  
+  "how much is fuel induction service": "Fuel Induction Service is $369.95 as an Ala Carte service.",
+  
+  "how much are wiper blades": "Wiper blades start at $35.95 as an Ala Carte service.",
+  
+  "how much is tire balancing": "Tire balance is $89.95 as an Ala Carte service.",
+  
+  "how often should I service my Mazda": "We recommend Minor Service every 5,000 miles. Major Service is recommended every 30,000 miles (or every 3 years), which includes all Minor Service items plus additional fluid exchanges and filter replacements.",
+  
+  "do you use synthetic oil": "Our standard service uses 5 quarts of non-synthetic oil. Please ask about synthetic oil options.",
+  
+  "what is a video inspection": "We perform a video inspection during every service so you can see the condition of your vehicle and any recommended repairs before we perform them.",
+  
+  "what is your warranty": "We meet Minimum Factory Requirements for all scheduled maintenance. Please consult your owner's manual for warranty details, or ask our service advisors for more information."
 }
