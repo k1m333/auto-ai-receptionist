@@ -710,6 +710,14 @@ def metrics():
     except Exception as e:
         return {"error": str(e), "status": "error"}, 500
 
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
+@app.route("/robots.txt")
+def robots():
+    return "User-agent: *\nDisallow: /"
+
 init_db()
 
 if __name__ == "__main__":

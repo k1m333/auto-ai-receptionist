@@ -64,18 +64,15 @@ Deployed on Render.
 3. Set environment variables in Render dashboard
 4. Deploy
 
-## Monitoring
+## Security & Monitoring
 
-Metrics endpoint (protected with METRICS_KEY):
-https://auto-ai-receptionist.onrender.com/metrics?key=your_key
-
-Returns:
-{
-  "total_calls": 42,
-  "total_bookings": 15,
-  "bookings_last_7_days": 12,
-  "status": "ok"
-}
+- **Twilio Signature Verification** – All incoming requests are validated to prevent spoofing.
+- **Rate Limiting** – 10 requests per 60 seconds per caller ID.
+- **Idempotency** – Prevents duplicate bookings using a composite key (caller ID + appointment time).
+- **Call Logging** – Every call is logged to SQLite for auditing.
+- **Metrics Endpoint** – `/metrics?key=<secret>` exposes total calls, total bookings, and 7‑day booking trends.
+- **Health Check** – `/health` endpoint for uptime monitoring.
+- **Robots.txt** – Disallows search engine crawling.
 
 ## Testing
 
