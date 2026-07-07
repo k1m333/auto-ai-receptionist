@@ -342,7 +342,7 @@ def book_appointment(speech_result, session, call_sid):
 
     # === IDEMPOTENCY CHECK ===
     phone = session.get("customer_phone", "unknown")
-    idempotency_key = f"{call_sid}_{start.strftime('%Y%m%d_%H%M')}"
+    idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
     conn = sqlite3.connect('calls.db')
     cursor = conn.cursor()
     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
