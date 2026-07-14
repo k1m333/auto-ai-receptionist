@@ -349,7 +349,20 @@ def book_appointment(speech_result, session, call_sid):
     row = cursor.fetchone()
     if row:
         conn.close()
-        return row[0]  # Already processed, return cached result
+        # Extract time from the key for a clearer message
+        try:
+            key_parts = idempotency_key.split('_')
+            if len(key_parts) >= 3:
+                date_str = key_parts[1]
+                time_str = key_parts[2]
+                dt = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
+                time_display = dt.strftime('%A, %B %d at %I:%M %p')
+                return (f"You already have an appointment at {time_display}. "
+                        f"Would you like to book a different time?")
+            else:
+                return "You already have an appointment at that time. Would you like to book a different time?"
+        except:
+            return "You already have an appointment at that time. Would you like to book a different time?"
     # === END IDEMPOTENCY CHECK ===
 
     event = create_event(
