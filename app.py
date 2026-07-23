@@ -343,10 +343,12 @@ def book_appointment(speech_result, session, call_sid):
     # === IDEMPOTENCY CHECK ===
     phone = session.get("customer_phone", "unknown")
     idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
+    print(f"🔑 IDEMPOTENCY KEY: {idempotency_key}")
     conn = sqlite3.connect('calls.db')
     cursor = conn.cursor()
     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
     row = cursor.fetchone()
+    print(f"🔍 ROW FOUND: {row}")
     if row:
         conn.close()
         # Extract time from the key for a clearer message
@@ -600,10 +602,12 @@ def voice():
                     start = datetime.fromisoformat(suggested)
                     phone = session.get("customer_phone", "unknown")
                     idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
+                    print(f"🔑 IDEMPOTENCY KEY (suggested): {idempotency_key}") 
                     conn = sqlite3.connect('calls.db')
                     cursor = conn.cursor()
                     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
                     row = cursor.fetchone()
+                    print(f"🔍 ROW FOUND (suggested): {row}")
                     if row:
                         conn.close()
                         # Extract time from the key for a clearer message
