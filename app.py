@@ -11,7 +11,6 @@ from flask import Flask, request, Response, session
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator
-from groq import Groq
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -62,7 +61,8 @@ def init_db():
 # 1. API Clients
 # ===========================
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+import google.generativeai as genai
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 twilio_client = Client(
     os.getenv("TWILIO_ACCOUNT_SID"),
@@ -215,15 +215,17 @@ def answer_from_faq(user_input):
 # 4. AI Response Helpers
 # ===========================
 
-def get_groq_response(prompt, context=""):
+def get_gemini_response(prompt, context=""):
+    model = genai.GenerativeModel("gemini-3.5-flash")
+    
     full_prompt = f"{context}\nUser: {prompt}\nAI:"
-    chat_completion = groq_client.chat.completions.create(
-        messages=[{"role": "user", "content": full_prompt}],
-        model="llama-3.1-8b-instant",
-        temperature=0.7,
-        max_tokens=150,
-    )
-    return chat_completion.choices[0].message.content.strip()
+    
+    try:
+        response = model.generate_content(full_prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"❌ Gemini API error: {e}")
+        return "I'm having trouble processing that. Could you please repeat?"
 
 def extract_time_from_speech(text):
     # First, try to find an explicit time like "3 PM" or "9:00"
@@ -675,7 +677,7 @@ def voice():
                         response_text = book_appointment(speech_result, session, call_sid)
             else:
                 prompt = f"The caller said: '{speech_result}'. Respond helpfully. Keep it brief."
-                response_text = get_groq_response(prompt, conversation_history)
+                response_text = get_gemini_response(prompt, conversation_history)
         
         # Update session history
         if "history" not in session:
