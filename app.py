@@ -25,14 +25,6 @@ from gemini_live_handler import handle_twilio_stream
 from websockets import serve
 from twilio.twiml.voice_response import VoiceResponse, Stream
 
-
-@app.route("/voice", methods=["POST"])
-def voice():
-    resp = VoiceResponse()
-    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
-    resp.append(stream)
-    return Response(str(resp), mimetype="text/xml")
-
 faq_cache = {}
 
 # Rate limiting: caller_id -> List of timestamps
@@ -45,6 +37,13 @@ pending_suggestions = {}
 # Temporary in-memory store for verification codes.
 # Use Redis or a database for Production.
 verification_codes = {}
+
+@app.route("/voice", methods=["POST"])
+def voice():
+    resp = VoiceResponse()
+    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
+    resp.append(stream)
+    return Response(str(resp), mimetype="text/xml")
 
 def init_db():
     conn = sqlite3.connect('calls.db')
