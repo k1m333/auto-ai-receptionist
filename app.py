@@ -20,6 +20,10 @@ from collections import defaultdict
 import time
 import sqlite3
 import threading
+import asyncio
+from gemini_live_handler import handle_twilio_stream
+from websockets import serve
+from twilio.twiml.voice_response import VoiceResponse, Stream
 
 faq_cache = {}
 
@@ -687,10 +691,19 @@ def voice():
     
     # Build Twilio response
     resp = VoiceResponse()
-    gather = Gather(input="speech", timeout=10, action="/voice", method="POST")
-    gather.say(response_text, voice="Polly.Salli")
-    resp.append(gather)
+    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
+    resp.append(stream)
     return Response(str(resp), mimetype="text/xml")
+
+@app.route("/media-stream", methods=["POST"])
+def media_stream():
+    """WebSocket endpoint for Twilio Media Streams."""
+    try:
+        asyncio.run(handle_twilio_stream(request))
+        return Response("", status=200)
+    except Exception as e:
+        print(f"❌ Media stream error: {e}")
+        return Response(f"Error: {e}", status=500)
 
 @app.route("/privacy", methods=["GET"])
 def privacy():
