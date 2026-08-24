@@ -25,6 +25,14 @@ from gemini_live_handler import handle_twilio_stream
 from websockets import serve
 from twilio.twiml.voice_response import VoiceResponse, Stream
 
+
+@app.route("/voice", methods=["POST"])
+def voice():
+    resp = VoiceResponse()
+    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
+    resp.append(stream)
+    return Response(str(resp), mimetype="text/xml")
+
 faq_cache = {}
 
 # Rate limiting: caller_id -> List of timestamps
@@ -415,13 +423,7 @@ GOODBYE_PHRASES = ["goodbye", "bye", "that's all", "no thanks", "nothing else", 
 AFFIRMATIVE = ["yes", "yeah", "yep", "sure", "book it", "okay", "please", "go ahead", "yes please", "yeah sure"]
 BOOKING_KEYWORDS = ["appointment", "schedule", "book"] + AFFIRMATIVE
 
-@app.route("/voice", methods=["POST"])
-def voice():
-    """Return TwiML to start Media Stream."""
-    resp = VoiceResponse()
-    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
-    resp.append(stream)
-    return Response(str(resp), mimetype="text/xml")
+
 
 # @app.route("/voice", methods=["POST"])
 # def voice():
