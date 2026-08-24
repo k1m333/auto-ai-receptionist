@@ -417,283 +417,291 @@ BOOKING_KEYWORDS = ["appointment", "schedule", "book"] + AFFIRMATIVE
 
 @app.route("/voice", methods=["POST"])
 def voice():
-    # === TWILIO SIGNATURE VERIFICATION ===
-    from twilio.request_validator import RequestValidator
-    
-    validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN"))
-    url = request.url
-    params = request.form.to_dict()
-    signature = request.headers.get('X-Twilio-Signature', '')
-    
-    if not validator.validate(url, params, signature):
-        print(f"❌ Invalid Twilio signature from {request.remote_addr}")
-        return Response("Forbidden", status=403)
-    print("✅ Twilio signature verified")
-    # === END VERIFICATION ===
-
-    # === RATE LIMITING ===
-    caller_id = request.form.get('Caller', 'unknown')
-    if is_rate_limited(caller_id):
-        resp = VoiceResponse()
-        resp.say("Too many requests. Please try again later.", voice="Polly.Salli")
-        resp.hangup()
-        return Response(str(resp), mimetype="text/xml")
-    # === END RATE LIMITING ===
-
-    # === CALL LOGGING (SQLite) ===
-    # === CALL LOGGING (SQLite) ===
-    call_sid = request.values.get('CallSid', 'unknown')
-    timestamp = datetime.now().isoformat()
-
-    def log_call_async():
-        conn = sqlite3.connect('calls.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS call_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                call_sid TEXT UNIQUE,
-                caller TEXT,
-                timestamp TEXT,
-                outcome TEXT
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS idempotency_keys (
-                idempotency_key TEXT PRIMARY KEY,
-                booking_result TEXT,
-                created_at TIMESTAMP
-            )
-        ''')
-        cursor.execute(
-            'INSERT OR IGNORE INTO call_logs (call_sid, caller, timestamp, outcome) VALUES (?, ?, ?, ?)',
-            (call_sid, caller_id, timestamp, 'started')
-        )
-        conn.commit()
-        conn.close()
-
-    threading.Thread(target=log_call_async).start()
-    # === END CALL LOGGING ===
-
-    speech_result = request.form.get("SpeechResult", "")
-    speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
-    print(f"DEBUG: speech_result = '{speech_result}'")
-    
-    # Goodbye detection
-    if speech_result and any(phrase in speech_result.lower() for phrase in GOODBYE_PHRASES):
-        resp = VoiceResponse()
-        resp.say("Thank you for calling. Have a great day!", voice="Polly.Salli")
-        resp.hangup()
-        return Response(str(resp), mimetype="text/xml")
-    
-    # First call (no speech yet)
-    if not speech_result and session.get("last_prompt"):
-        response_text = session["last_prompt"]
-    elif not speech_result:
-        session.clear()
-        response_text = "Hello! Thanks for calling. Could you please tell me your name and phone number?"
-        session["history"] = f"AI: {response_text}"
-        session["last_prompt"] = response_text
-        session["awaiting_phone"] = True
-    else:
-        conversation_history = session.get("history", "")
-        
-        # Awaiting phone number
-        if session.get("awaiting_phone"):
-            digits = re.sub(r'\D', '', speech_result)
-            caller_id = request.form.get('Caller', '')
-            clean_caller = re.sub(r'\D', '', caller_id)
-            
-            if not session.get("caller_id_confirmed") and len(clean_caller) >= 10 and not session.get("asked_caller_id"):
-                session["detected_caller"] = clean_caller
-                session["asked_caller_id"] = True
-                response_text = f"I see you're calling from {clean_caller[-4:]}. Shall I send the verification code there? Say yes or no."
-            
-            elif session.get("asked_caller_id") and any(word in speech_result for word in AFFIRMATIVE):
-                digits = session.get("detected_caller", "")
-                if len(digits) >= 10:
-                    session["customer_phone"] = digits
-                    session["awaiting_phone"] = False
-                    session["asked_caller_id"] = False
-                    import random
-                    code = str(random.randint(100000, 999999))
-                    call_sid = request.values.get('CallSid')
-                    verification_codes[call_sid] = {
-                        "code": code,
-                        "attempts": 0,
-                        "phone": digits
-                    }
-                    try:
-                        twilio_client.messages.create(
-                            body=f"Your AI Receptionist verification code is: {code}. Please say it back to confirm your number.",
-                            from_=TWILIO_PHONE_NUMBER,
-                            to=digits
-                        )
-                        session["awaiting_verification"] = True
-                        response_text = f"I've sent a 6-digit code to {digits[-4:]}. Please say the code now."
-                    except Exception as e:
-                        print(f"SMS failed: {e}")
-                        response_text = "I'm having trouble sending texts. Let's continue without verification."
-                        session["awaiting_verification"] = False
-            
-            elif session.get("asked_caller_id") and "no" in speech_result:
-                session["asked_caller_id"] = False
-                session["caller_id_confirmed"] = False
-                response_text = "Okay. Please say your phone number now."
-            
-            elif not session.get("asked_caller_id") and len(digits) >= 10:
-                session["customer_phone"] = digits
-                session["awaiting_phone"] = False
-                import random
-                code = str(random.randint(100000, 999999))
-                call_sid = request.values.get('CallSid')
-                verification_codes[call_sid] = {
-                    "code": code,
-                    "attempts": 0,
-                    "phone": digits
-                }
-                try:
-                    twilio_client.messages.create(
-                        body=f"Your AI Receptionist verification code is: {code}. Please say it back to confirm your number.",
-                        from_=TWILIO_PHONE_NUMBER,
-                        to=digits
-                    )
-                    session["awaiting_verification"] = True
-                    response_text = f"I've sent a 6-digit code to {digits[-4:]}. Please say the code now."
-                except Exception as e:
-                    print(f"SMS failed: {e}")
-                    response_text = "I'm having trouble sending texts. Let's continue without verification."
-                    session["awaiting_verification"] = False
-            
-            else:
-                response_text = "I didn't catch that. Please say your phone number again."
-        
-        elif session.get("awaiting_verification"):
-            spoken_digits = re.sub(r'\D', '', speech_result)
-            call_sid = request.values.get('CallSid')
-            stored = verification_codes.get(call_sid)
-            
-            if stored and spoken_digits == stored["code"]:
-                session["awaiting_verification"] = False
-                del verification_codes[call_sid]
-                response_text = "Code verified successfully. How can I help you today?"
-            else:
-                if stored:
-                    stored["attempts"] += 1
-                    if stored["attempts"] >= 3:
-                        del verification_codes[call_sid]
-                        session["awaiting_verification"] = False
-                        response_text = "Too many failed attempts. Please call us directly."
-                    else:
-                        response_text = f"Sorry, that didn't match. You have {3 - stored['attempts']} attempts left. Please say the code sent to {stored['phone'][-4:]} again."
-                else:
-                    session["awaiting_verification"] = False
-                    response_text = "Verification expired. Let's continue. How can I help?"
-        
-        else:
-            # Normal conversation
-            faq_answer = answer_from_faq(speech_result)
-            if faq_answer:
-                response_text = faq_answer
-            elif any(word in speech_result.lower() for word in BOOKING_KEYWORDS):
-                print("DEBUG: Entered booking intent")
-                call_sid = request.values.get('CallSid')
-                suggested = pending_suggestions.get(call_sid)
-                print(f"DEBUG: suggested = {suggested}")
-                print(f"DEBUG: speech_result = '{speech_result}'")
-                
-                if suggested and any(word in speech_result for word in AFFIRMATIVE):
-                    pending_suggestions.pop(call_sid, None)
-                    print("DEBUG: User accepted suggested time")
-                    # === IDEMPOTENCY CHECK ===
-                    start = datetime.fromisoformat(suggested)
-                    phone = session.get("customer_phone", "unknown")
-                    idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
-                    print(f"🔑 IDEMPOTENCY KEY (suggested): {idempotency_key}") 
-                    conn = sqlite3.connect('calls.db')
-                    cursor = conn.cursor()
-                    cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
-                    row = cursor.fetchone()
-                    print(f"🔍 ROW FOUND (suggested): {row}")
-                    if row:
-                        conn.close()
-                        # Extract time from the key for a clearer message
-                        try:
-                            key_parts = idempotency_key.split('_')
-                            if len(key_parts) >= 3:
-                                date_str = key_parts[1]
-                                time_str = key_parts[2]
-                                dt = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
-                                time_display = dt.strftime('%A, %B %d at %I:%M %p')
-                                return (f"You already have an appointment at {time_display}. "
-                                        f"Would you like to book a different time?")
-                            else:
-                                return "You already have an appointment at that time. Would you like to book a different time?"
-                        except:
-                            return "You already have an appointment at that time. Would you like to book a different time?"
-                    else:
-                        try:
-                            end = start + timedelta(minutes=15)
-                            start_str = start.isoformat()
-                            end_str = end.isoformat()
-                            
-                            service = get_calendar_service()
-                            calendar_id = os.environ.get("CALENDAR_ID", "primary")
-                            
-                            event = create_event(
-                                service, calendar_id,
-                                f"Appointment with {session.get('caller_name', 'Customer')}",
-                                start_str, end_str,
-                                f"Booked via AI assistant (suggested time). Caller said: {speech_result}"
-                            )
-                            
-                            if event and 'id' in event:
-                                customer_phone = session.get("customer_phone")
-                                if customer_phone:
-                                    send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
-                                response_text = f"Great! I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
-                                cursor.execute(
-                                    "INSERT OR IGNORE INTO idempotency_keys (idempotency_key, booking_result, created_at) VALUES (?, ?, ?)",
-                                    (idempotency_key, response_text, datetime.now().isoformat())
-                                )
-                                conn.commit()
-                            else:
-                                response_text = "I'm sorry, there was a problem booking that time. Please call us directly."
-                        except Exception as e:
-                            print(f"DEBUG: Exception in yes branch: {e}")
-                            response_text = "I'm sorry, I had trouble booking that time. Please call us directly."
-                        conn.close()
-                    session["suggestion_handled"] = True
-                
-                elif "no" in speech_result:
-                    pending_suggestions.pop(call_sid, None)
-                    print("DEBUG: User rejected suggested time")
-                    response_text = "No problem. What time would you work for you?"
-                    session["suggestion_handled"] = True
-                
-                else:
-                    # Only call book_appointment if we haven't just handled a suggestion
-                    if session.get("suggestion_handled"):
-                        session["suggestion_handled"] = False
-                        # Don't re-enter booking – just keep response_text as is
-                        pass
-                    else:
-                        print("DEBUG: No pending suggestion, calling book_appointment")
-                        response_text = book_appointment(speech_result, session, call_sid)
-            else:
-                prompt = f"The caller said: '{speech_result}'. Respond helpfully. Keep it brief."
-                response_text = get_gemini_response(prompt, conversation_history)
-        
-        # Update session history
-        if "history" not in session:
-            session["history"] = ""
-        session["history"] += f"\nUser: {speech_result}\nAI: {response_text}"
-        session["last_prompt"] = response_text
-    
-    # Build Twilio response
+    """Return TwiML to start Media Stream."""
     resp = VoiceResponse()
     stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
     resp.append(stream)
     return Response(str(resp), mimetype="text/xml")
+
+# @app.route("/voice", methods=["POST"])
+# def voice():
+#     # === TWILIO SIGNATURE VERIFICATION ===
+#     from twilio.request_validator import RequestValidator
+    
+#     validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN"))
+#     url = request.url
+#     params = request.form.to_dict()
+#     signature = request.headers.get('X-Twilio-Signature', '')
+    
+#     if not validator.validate(url, params, signature):
+#         print(f"❌ Invalid Twilio signature from {request.remote_addr}")
+#         return Response("Forbidden", status=403)
+#     print("✅ Twilio signature verified")
+#     # === END VERIFICATION ===
+
+#     # === RATE LIMITING ===
+#     caller_id = request.form.get('Caller', 'unknown')
+#     if is_rate_limited(caller_id):
+#         resp = VoiceResponse()
+#         resp.say("Too many requests. Please try again later.", voice="Polly.Salli")
+#         resp.hangup()
+#         return Response(str(resp), mimetype="text/xml")
+#     # === END RATE LIMITING ===
+
+#     # === CALL LOGGING (SQLite) ===
+#     # === CALL LOGGING (SQLite) ===
+#     call_sid = request.values.get('CallSid', 'unknown')
+#     timestamp = datetime.now().isoformat()
+
+#     def log_call_async():
+#         conn = sqlite3.connect('calls.db')
+#         cursor = conn.cursor()
+#         cursor.execute('''
+#             CREATE TABLE IF NOT EXISTS call_logs (
+#                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+#                 call_sid TEXT UNIQUE,
+#                 caller TEXT,
+#                 timestamp TEXT,
+#                 outcome TEXT
+#             )
+#         ''')
+#         cursor.execute('''
+#             CREATE TABLE IF NOT EXISTS idempotency_keys (
+#                 idempotency_key TEXT PRIMARY KEY,
+#                 booking_result TEXT,
+#                 created_at TIMESTAMP
+#             )
+#         ''')
+#         cursor.execute(
+#             'INSERT OR IGNORE INTO call_logs (call_sid, caller, timestamp, outcome) VALUES (?, ?, ?, ?)',
+#             (call_sid, caller_id, timestamp, 'started')
+#         )
+#         conn.commit()
+#         conn.close()
+
+#     threading.Thread(target=log_call_async).start()
+#     # === END CALL LOGGING ===
+
+#     speech_result = request.form.get("SpeechResult", "")
+#     speech_result = speech_result.lower().strip().rstrip('.').rstrip('!').rstrip('?')
+#     print(f"DEBUG: speech_result = '{speech_result}'")
+    
+#     # Goodbye detection
+#     if speech_result and any(phrase in speech_result.lower() for phrase in GOODBYE_PHRASES):
+#         resp = VoiceResponse()
+#         resp.say("Thank you for calling. Have a great day!", voice="Polly.Salli")
+#         resp.hangup()
+#         return Response(str(resp), mimetype="text/xml")
+    
+#     # First call (no speech yet)
+#     if not speech_result and session.get("last_prompt"):
+#         response_text = session["last_prompt"]
+#     elif not speech_result:
+#         session.clear()
+#         response_text = "Hello! Thanks for calling. Could you please tell me your name and phone number?"
+#         session["history"] = f"AI: {response_text}"
+#         session["last_prompt"] = response_text
+#         session["awaiting_phone"] = True
+#     else:
+#         conversation_history = session.get("history", "")
+        
+#         # Awaiting phone number
+#         if session.get("awaiting_phone"):
+#             digits = re.sub(r'\D', '', speech_result)
+#             caller_id = request.form.get('Caller', '')
+#             clean_caller = re.sub(r'\D', '', caller_id)
+            
+#             if not session.get("caller_id_confirmed") and len(clean_caller) >= 10 and not session.get("asked_caller_id"):
+#                 session["detected_caller"] = clean_caller
+#                 session["asked_caller_id"] = True
+#                 response_text = f"I see you're calling from {clean_caller[-4:]}. Shall I send the verification code there? Say yes or no."
+            
+#             elif session.get("asked_caller_id") and any(word in speech_result for word in AFFIRMATIVE):
+#                 digits = session.get("detected_caller", "")
+#                 if len(digits) >= 10:
+#                     session["customer_phone"] = digits
+#                     session["awaiting_phone"] = False
+#                     session["asked_caller_id"] = False
+#                     import random
+#                     code = str(random.randint(100000, 999999))
+#                     call_sid = request.values.get('CallSid')
+#                     verification_codes[call_sid] = {
+#                         "code": code,
+#                         "attempts": 0,
+#                         "phone": digits
+#                     }
+#                     try:
+#                         twilio_client.messages.create(
+#                             body=f"Your AI Receptionist verification code is: {code}. Please say it back to confirm your number.",
+#                             from_=TWILIO_PHONE_NUMBER,
+#                             to=digits
+#                         )
+#                         session["awaiting_verification"] = True
+#                         response_text = f"I've sent a 6-digit code to {digits[-4:]}. Please say the code now."
+#                     except Exception as e:
+#                         print(f"SMS failed: {e}")
+#                         response_text = "I'm having trouble sending texts. Let's continue without verification."
+#                         session["awaiting_verification"] = False
+            
+#             elif session.get("asked_caller_id") and "no" in speech_result:
+#                 session["asked_caller_id"] = False
+#                 session["caller_id_confirmed"] = False
+#                 response_text = "Okay. Please say your phone number now."
+            
+#             elif not session.get("asked_caller_id") and len(digits) >= 10:
+#                 session["customer_phone"] = digits
+#                 session["awaiting_phone"] = False
+#                 import random
+#                 code = str(random.randint(100000, 999999))
+#                 call_sid = request.values.get('CallSid')
+#                 verification_codes[call_sid] = {
+#                     "code": code,
+#                     "attempts": 0,
+#                     "phone": digits
+#                 }
+#                 try:
+#                     twilio_client.messages.create(
+#                         body=f"Your AI Receptionist verification code is: {code}. Please say it back to confirm your number.",
+#                         from_=TWILIO_PHONE_NUMBER,
+#                         to=digits
+#                     )
+#                     session["awaiting_verification"] = True
+#                     response_text = f"I've sent a 6-digit code to {digits[-4:]}. Please say the code now."
+#                 except Exception as e:
+#                     print(f"SMS failed: {e}")
+#                     response_text = "I'm having trouble sending texts. Let's continue without verification."
+#                     session["awaiting_verification"] = False
+            
+#             else:
+#                 response_text = "I didn't catch that. Please say your phone number again."
+        
+#         elif session.get("awaiting_verification"):
+#             spoken_digits = re.sub(r'\D', '', speech_result)
+#             call_sid = request.values.get('CallSid')
+#             stored = verification_codes.get(call_sid)
+            
+#             if stored and spoken_digits == stored["code"]:
+#                 session["awaiting_verification"] = False
+#                 del verification_codes[call_sid]
+#                 response_text = "Code verified successfully. How can I help you today?"
+#             else:
+#                 if stored:
+#                     stored["attempts"] += 1
+#                     if stored["attempts"] >= 3:
+#                         del verification_codes[call_sid]
+#                         session["awaiting_verification"] = False
+#                         response_text = "Too many failed attempts. Please call us directly."
+#                     else:
+#                         response_text = f"Sorry, that didn't match. You have {3 - stored['attempts']} attempts left. Please say the code sent to {stored['phone'][-4:]} again."
+#                 else:
+#                     session["awaiting_verification"] = False
+#                     response_text = "Verification expired. Let's continue. How can I help?"
+        
+#         else:
+#             # Normal conversation
+#             faq_answer = answer_from_faq(speech_result)
+#             if faq_answer:
+#                 response_text = faq_answer
+#             elif any(word in speech_result.lower() for word in BOOKING_KEYWORDS):
+#                 print("DEBUG: Entered booking intent")
+#                 call_sid = request.values.get('CallSid')
+#                 suggested = pending_suggestions.get(call_sid)
+#                 print(f"DEBUG: suggested = {suggested}")
+#                 print(f"DEBUG: speech_result = '{speech_result}'")
+                
+#                 if suggested and any(word in speech_result for word in AFFIRMATIVE):
+#                     pending_suggestions.pop(call_sid, None)
+#                     print("DEBUG: User accepted suggested time")
+#                     # === IDEMPOTENCY CHECK ===
+#                     start = datetime.fromisoformat(suggested)
+#                     phone = session.get("customer_phone", "unknown")
+#                     idempotency_key = f"{phone}_{start.strftime('%Y%m%d_%H%M')}"
+#                     print(f"🔑 IDEMPOTENCY KEY (suggested): {idempotency_key}") 
+#                     conn = sqlite3.connect('calls.db')
+#                     cursor = conn.cursor()
+#                     cursor.execute("SELECT booking_result FROM idempotency_keys WHERE idempotency_key = ?", (idempotency_key,))
+#                     row = cursor.fetchone()
+#                     print(f"🔍 ROW FOUND (suggested): {row}")
+#                     if row:
+#                         conn.close()
+#                         # Extract time from the key for a clearer message
+#                         try:
+#                             key_parts = idempotency_key.split('_')
+#                             if len(key_parts) >= 3:
+#                                 date_str = key_parts[1]
+#                                 time_str = key_parts[2]
+#                                 dt = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
+#                                 time_display = dt.strftime('%A, %B %d at %I:%M %p')
+#                                 return (f"You already have an appointment at {time_display}. "
+#                                         f"Would you like to book a different time?")
+#                             else:
+#                                 return "You already have an appointment at that time. Would you like to book a different time?"
+#                         except:
+#                             return "You already have an appointment at that time. Would you like to book a different time?"
+#                     else:
+#                         try:
+#                             end = start + timedelta(minutes=15)
+#                             start_str = start.isoformat()
+#                             end_str = end.isoformat()
+                            
+#                             service = get_calendar_service()
+#                             calendar_id = os.environ.get("CALENDAR_ID", "primary")
+                            
+#                             event = create_event(
+#                                 service, calendar_id,
+#                                 f"Appointment with {session.get('caller_name', 'Customer')}",
+#                                 start_str, end_str,
+#                                 f"Booked via AI assistant (suggested time). Caller said: {speech_result}"
+#                             )
+                            
+#                             if event and 'id' in event:
+#                                 customer_phone = session.get("customer_phone")
+#                                 if customer_phone:
+#                                     send_sms(customer_phone, start.strftime('%A, %B %d at %I:%M %p'))
+#                                 response_text = f"Great! I've booked your appointment for {start.strftime('%A, %B %d at %I:%M %p')}. Anything else?"
+#                                 cursor.execute(
+#                                     "INSERT OR IGNORE INTO idempotency_keys (idempotency_key, booking_result, created_at) VALUES (?, ?, ?)",
+#                                     (idempotency_key, response_text, datetime.now().isoformat())
+#                                 )
+#                                 conn.commit()
+#                             else:
+#                                 response_text = "I'm sorry, there was a problem booking that time. Please call us directly."
+#                         except Exception as e:
+#                             print(f"DEBUG: Exception in yes branch: {e}")
+#                             response_text = "I'm sorry, I had trouble booking that time. Please call us directly."
+#                         conn.close()
+#                     session["suggestion_handled"] = True
+                
+#                 elif "no" in speech_result:
+#                     pending_suggestions.pop(call_sid, None)
+#                     print("DEBUG: User rejected suggested time")
+#                     response_text = "No problem. What time would you work for you?"
+#                     session["suggestion_handled"] = True
+                
+#                 else:
+#                     # Only call book_appointment if we haven't just handled a suggestion
+#                     if session.get("suggestion_handled"):
+#                         session["suggestion_handled"] = False
+#                         # Don't re-enter booking – just keep response_text as is
+#                         pass
+#                     else:
+#                         print("DEBUG: No pending suggestion, calling book_appointment")
+#                         response_text = book_appointment(speech_result, session, call_sid)
+#             else:
+#                 prompt = f"The caller said: '{speech_result}'. Respond helpfully. Keep it brief."
+#                 response_text = get_gemini_response(prompt, conversation_history)
+        
+#         # Update session history
+#         if "history" not in session:
+#             session["history"] = ""
+#         session["history"] += f"\nUser: {speech_result}\nAI: {response_text}"
+#         session["last_prompt"] = response_text
+    
+#     # Build Twilio response
+#     resp = VoiceResponse()
+#     stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
+#     resp.append(stream)
+#     return Response(str(resp), mimetype="text/xml")
 
 @app.route("/media-stream", methods=["POST"])
 def media_stream():
