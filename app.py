@@ -41,7 +41,8 @@ verification_codes = {}
 @app.route("/voice", methods=["POST"])
 def voice():
     resp = VoiceResponse()
-    stream = Stream(url="wss://auto-ai-receptionist.onrender.com/media-stream")
+    # Use Render's public URL + port 8765
+    stream = Stream(url="wss://auto-ai-receptionist.onrender.com:8765")
     resp.append(stream)
     return Response(str(resp), mimetype="text/xml")
 

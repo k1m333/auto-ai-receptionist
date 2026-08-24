@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: flask-app
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    ports:
+      - port: 5000
+
+  - type: web
+    name: websocket-server
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python websocket_server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    ports:
+      - port: 8765
