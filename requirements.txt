@@ -6,3 +6,4 @@ google-auth-oauthlib
 python-dotenv
 pytz
 gunicorn
+websockets
