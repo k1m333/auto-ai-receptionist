@@ -1,31 +1,1977 @@
 {
   "advisors": [
     {
-      "id": "adv_001",
-      "name": "Mike",
-      "specialty": "Oil Changes & Brakes",
-      "available_slots": [
-        "2026-11-16T10:30:00",
-        "2026-11-16T14:00:00",
-        "2026-11-17T09:00:00"
+      "id": "adv_mark",
+      "name": "Mark Witowski",
+      "schedule": [
+        {
+          "datetime": "2026-11-16T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:30:00-08:00",
+          "status": "available"
+        }
       ]
     },
     {
-      "id": "adv_002",
-      "name": "Sarah",
-      "specialty": "Engine Diagnostics",
-      "available_slots": [
-        "2026-11-16T11:00:00",
-        "2026-11-16T15:00:00"
+      "id": "adv_raymond",
+      "name": "Raymond Chow",
+      "schedule": [
+        {
+          "datetime": "2026-11-16T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:30:00-08:00",
+          "status": "available"
+        }
       ]
     },
     {
-      "id": "adv_003",
-      "name": "Jordan",
-      "specialty": "Tire & Alignment",
-      "available_slots": [
-        "2026-11-16T08:30:00",
-        "2026-11-16T12:00:00"
+      "id": "adv_josh",
+      "name": "Josh Steventon",
+      "schedule": [
+        {
+          "datetime": "2026-11-16T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T16:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T12:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:30:00-08:00",
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "id": "adv_alvin",
+      "name": "Alvin Wong",
+      "schedule": [
+        {
+          "datetime": "2026-11-16T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T16:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T15:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T15:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T16:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T16:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T10:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T11:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T14:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-21T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T16:30:00-08:00",
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "id": "adv_ryan",
+      "name": "Ryan Kingsbury",
+      "schedule": [
+        {
+          "datetime": "2026-11-16T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-16T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-16T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T15:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-17T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-17T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T10:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-18T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-18T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T08:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T10:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T12:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T13:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T14:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-19T16:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-19T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T08:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-20T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T11:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-20T16:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T08:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T08:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T09:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T09:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T10:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T10:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T11:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T11:30:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-21T12:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T12:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T13:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-21T13:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T14:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T14:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T15:00:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T15:30:00-08:00",
+          "status": "available"
+        },
+        {
+          "datetime": "2026-11-21T16:00:00-08:00",
+          "status": "booked"
+        },
+        {
+          "datetime": "2026-11-21T16:30:00-08:00",
+          "status": "booked"
+        }
       ]
     }
   ]

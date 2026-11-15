@@ -47,8 +47,11 @@ GEMINI_OUTPUT_RATE = 24000
 PCM_WIDTH = 2  # 16-bit little-endian
 PCM_CHANNELS = 1
 
-APPOINTMENT_MINUTES = 15
+APPOINTMENT_MINUTES = 30
 SUGGESTION_COUNT = 3
+# Only these advisors work Saturdays (must match generate_advisors.py).
+SATURDAY_ADVISORS = frozenset({"Ryan Kingsbury", "Alvin Wong"})
+
 HANGUP_AUDIO_GRACE_SECONDS = 1.5
 GEMINI_SETUP_TIMEOUT_SECONDS = 10.0
 # How long silence must last before Gemini ends the caller's speech turn.
@@ -81,7 +84,7 @@ ADVISORS_FILENAME = "advisors.json"
 ADVISORS_PATH = os.path.join(os.path.dirname(__file__), ADVISORS_FILENAME)
 
 BUSINESS_HOURS_LINES = (
-    "Monday–Friday: 7:30 AM – 4:30 PM",
+    "Monday–Friday: 7:30 AM – 6:00 PM",
     "Saturday: 8:00 AM – 5:00 PM",
     "Sunday: closed",
 )
@@ -107,7 +110,42 @@ GREETING_WITHOUT_PHONE = (
 )
 
 SYSTEM_INSTRUCTION_TEMPLATE = """
-You are the AI receptionist for an auto shop. Speak briefly and naturally on a phone call.
+You are the AI service advisor for Mazda Service Seattle - Lee Johnson. You are
+helpful, professional, and efficient. Speak briefly and naturally on a phone call.
+
+Here is your staff directory: General Manager is Dave Steventon, Assistant
+Manager is Ryan Kingsbury. The Service Advisors are Mark Witowski, Raymond Chow,
+Josh Steventon, and Alvin Wong. If a customer asks to speak to a specific person,
+acknowledge the request, but do not promise they are available right now.
+
+You MUST answer questions about pricing using ONLY the exact prices provided in
+the system context below. Never guess or make up a price. If a customer asks for
+a service not listed, tell them you will have an advisor call them with a quote.
+Your goal is to book them for either a Minor Service ($139.95) or Major Service
+($639.95), or answer their pricing questions.
+
+Exact pricing (use these numbers only):
+- Minor Service (5,000 mile): $139.95 — oil change, tire rotation, video
+  inspection, fluid checks, brake inspection
+- Major Service (30k/60k/90k/120k miles): $639.95 — oil change, tire rotation,
+  brake fluid exchange, cooling system exchange, cabin/engine air filter
+  replacement, battery test, video inspection
+- Spark Plugs (4-cyl): $399.95
+- 12V Battery: $299.95
+- Power Steering Fluid: $189.95
+- Cooling System Fluid: $209.95
+- Brake System Fluid: $204.95
+- Automatic Transmission Fluid: $249.95
+- Manual Transmission Fluid: $169.95
+- Cabin Air Filter: $75.95
+- Engine Air Filter: $69.95
+- Front/Rear Differential Service: $169.95
+- Skyactiv Differential: $169.95
+- Four-wheel alignment: $179.95
+- Fuel Induction Service: $369.95
+- Tire Rotation: $39.95
+- Wiper Blades: $35.95
+- Balance Tires: $89.95
 
 Today's date is {today_str} ({timezone} timezone).
 If the caller says "tomorrow", that means {tomorrow_str}. Always calculate relative
@@ -122,14 +160,19 @@ The shop is closed on Sundays. Never book or offer a Sunday appointment. If the
 caller asks for Sunday or "tomorrow" falls on Sunday, explain the shop is closed
 and offer the next open weekday/Saturday instead.
 
+Note: Only Ryan Kingsbury and Alvin Wong are available on Saturdays. If a
+customer requests a Saturday appointment, you must only check availability for
+Ryan or Alvin.
+
 When calling check_calendar, you MUST output standard ISO 8601 timestamps with
 timezone offset, using 24-hour time with two-digit hours only (00–23).
 Correct examples: 2026-11-17T14:00:00-08:00 for 2 PM, 2026-11-17T09:30:00-08:00 for 9:30 AM.
 Never invent malformed times like 114:00:00 or hours above 23.
 
-You can answer common service/pricing questions and book appointments with a
-service advisor (Mike, Sarah, or Jordan). When the caller wants to schedule,
-collect a preferred day/time, then call check_calendar with book=false.
+You can answer pricing from the list above and book appointments with a service
+advisor (Mark Witowski, Raymond Chow, Josh Steventon, Alvin Wong, or Ryan
+Kingsbury). When the caller wants to schedule, collect a preferred day/time,
+then call check_calendar with book=false.
 
 check_calendar responses:
 - status "available": that time is free with the named advisor. Tell the caller
@@ -218,7 +261,11 @@ CHECK_CALENDAR_DECLARATION = {
             },
             "advisor": {
                 "type": "STRING",
-                "description": "Optional preferred advisor name (Mike, Sarah, Jordan).",
+                "description": (
+                    "Optional preferred advisor name (Mark Witowski, Raymond Chow, "
+                    "Josh Steventon, Alvin Wong, Ryan Kingsbury). "
+                    "Saturdays: only Ryan Kingsbury or Alvin Wong."
+                ),
             },
         },
         "required": ["start_time"],
@@ -397,17 +444,38 @@ def save_advisors(advisors: list[dict]) -> None:
         logger.exception("Failed to save advisors to %s", ADVISORS_PATH)
 
 
-def _all_open_slots(advisors: list[dict]) -> list[tuple[datetime, dict, str]]:
-    """Flatten (datetime, advisor, raw_slot_str) sorted by time."""
-    rows = []
+def _advisor_works_on(dt: datetime, advisor_name: str) -> bool:
+    """Saturday appointments are limited to Ryan Kingsbury and Alvin Wong."""
+    if dt.weekday() != 5:
+        return True
+    return advisor_name in SATURDAY_ADVISORS
+
+
+def _iter_schedule_slots(advisors: list[dict]):
+    """Yield (datetime, advisor, slot_dict) for every schedule entry."""
     for advisor in advisors:
-        for raw in advisor.get("available_slots") or []:
+        name = advisor.get("name") or ""
+        for slot in advisor.get("schedule") or []:
+            raw = slot.get("datetime")
+            if not raw:
+                continue
             try:
                 dt = _parse_start_time(raw)
             except ValueError:
                 logger.warning("Skipping invalid advisor slot: %s", raw)
                 continue
-            rows.append((dt, advisor, raw))
+            if not _advisor_works_on(dt, name):
+                continue
+            yield dt, advisor, slot
+
+
+def _all_open_slots(advisors: list[dict]) -> list[tuple[datetime, dict, dict]]:
+    """Flatten available (datetime, advisor, slot) sorted by time."""
+    rows = [
+        (dt, advisor, slot)
+        for dt, advisor, slot in _iter_schedule_slots(advisors)
+        if (slot.get("status") or "").lower() == "available"
+    ]
     rows.sort(key=lambda r: r[0])
     return rows
 
@@ -415,19 +483,22 @@ def _all_open_slots(advisors: list[dict]) -> list[tuple[datetime, dict, str]]:
 def find_advisor_for_time(
     start: datetime, advisors: list[dict], preferred: str | None = None
 ) -> dict | None:
-    """Return the first advisor who has this exact slot (optional name filter)."""
+    """Return the first advisor with an available slot at this exact datetime."""
     want = _slot_key(start)
     preferred_l = preferred.strip().lower() if preferred else None
-    for advisor in advisors:
-        if preferred_l and advisor.get("name", "").lower() != preferred_l:
+    for dt, advisor, slot in _iter_schedule_slots(advisors):
+        if (slot.get("status") or "").lower() != "available":
             continue
-        for raw in advisor.get("available_slots") or []:
-            try:
-                if _slot_key(_parse_start_time(raw)) == want:
-                    return advisor
-            except ValueError:
-                continue
+        if _slot_key(dt) != want:
+            continue
+        name = advisor.get("name") or ""
+        if not _advisor_works_on(start, name):
+            continue
+        if preferred_l and name.lower() != preferred_l:
+            continue
+        return advisor
     if preferred_l:
+        # Preferred advisor unavailable (e.g. Mark on Saturday) — try anyone eligible.
         return find_advisor_for_time(start, advisors, preferred=None)
     return None
 
@@ -435,19 +506,24 @@ def find_advisor_for_time(
 def suggest_next_slots(
     start: datetime, advisors: list[dict], count: int = SUGGESTION_COUNT
 ) -> list[dict]:
-    """Next open slots after `start` from any advisor."""
+    """Next 3 closest available slots after `start` across eligible advisors."""
     suggestions = []
-    for dt, advisor, _raw in _all_open_slots(advisors):
+    seen_times: set[str] = set()
+    for dt, advisor, _slot in _all_open_slots(advisors):
         if dt <= start:
             continue
+        name = advisor.get("name") or ""
+        if not _advisor_works_on(dt, name):
+            continue
+        key = _slot_key(dt)
+        if key in seen_times:
+            continue
+        seen_times.add(key)
         suggestions.append(
             {
                 "slot": dt.isoformat(),
-                "advisor": advisor.get("name"),
-                "specialty": advisor.get("specialty"),
-                "display": (
-                    f"{dt.strftime('%A at %I:%M %p')} with {advisor.get('name')}"
-                ),
+                "advisor": name,
+                "display": f"{dt.strftime('%A at %I:%M %p')} with {name}",
             }
         )
         if len(suggestions) >= count:
@@ -456,23 +532,26 @@ def suggest_next_slots(
 
 
 def claim_advisor_slot(start: datetime, advisor_name: str) -> bool:
-    """Remove a booked slot from advisors.json so it can't be double-booked."""
+    """Mark a slot booked in advisors.json so it can't be double-booked."""
     advisors = load_advisors()
     want = _slot_key(start)
     changed = False
     for advisor in advisors:
         if advisor.get("name") != advisor_name:
             continue
-        kept = []
-        for raw in advisor.get("available_slots") or []:
+        for slot in advisor.get("schedule") or []:
+            raw = slot.get("datetime")
+            if not raw:
+                continue
             try:
-                if _slot_key(_parse_start_time(raw)) == want:
-                    changed = True
+                if _slot_key(_parse_start_time(raw)) != want:
                     continue
             except ValueError:
-                pass
-            kept.append(raw)
-        advisor["available_slots"] = kept
+                continue
+            if (slot.get("status") or "").lower() == "available":
+                slot["status"] = "booked"
+                changed = True
+            break
         break
     if changed:
         save_advisors(advisors)
@@ -537,11 +616,10 @@ def check_calendar(
                     "ok": True,
                     "status": "available",
                     "advisor": match["name"],
-                    "specialty": match.get("specialty"),
                     "slot": start.isoformat(),
                     "message": (
                         f"{start.strftime('%A, %B %d at %I:%M %p')} is available "
-                        f"with {match['name']} ({match.get('specialty', 'advisor')})."
+                        f"with {match['name']}."
                     ),
                 }
 
