@@ -1,9 +1,9 @@
 Flask
+flask-sock
 twilio
 google-generativeai
-google-api-python-client
-google-auth-oauthlib
 python-dotenv
 pytz
 gunicorn
 websockets
+audioop-lts

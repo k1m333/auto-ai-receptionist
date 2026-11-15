@@ -1,92 +1,61 @@
+"""
+Optional standalone Twilio Media Streams WebSocket server.
+
+Local / free-ngrok development should NOT use this file — run `python app.py`
+instead. Flask + flask-sock serve both /voice and /media-stream on port 5000
+so a single `ngrok http 5000` tunnel reaches everything.
+
+Keep this for dual-process deploys (e.g. Render websocket-server service) where
+HTTP and WebSockets are split across hosts.
+"""
+
 import asyncio
-import json
-import websockets
 import os
+
+import websockets
 from dotenv import load_dotenv
+
+from gemini_live_handler import handle_twilio_stream
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY not set in environment")
 
-GEMINI_LIVE_URL = f"wss://generativelanguage.googleapis.com/ws/live/v1beta/models/gemini-3.1-flash-live-preview:live?key={GEMINI_API_KEY}"
+async def twilio_media_handler(websocket):
+    """
+    Accept Twilio connections on /media-stream.
 
-async def handle_twilio_stream(websocket, path):
-    """Handle Twilio Media Streams and bridge to Gemini Live."""
-    try:
-        print("🔗 Twilio WebSocket connected")
+    Twilio sends JSON events:
+      - connected / start / media / stop
+    media.payload is base64-encoded mulaw (audio/pcmu) at 8 kHz.
+    """
+    path = getattr(getattr(websocket, "request", None), "path", "") or ""
+    if path and not path.startswith("/media-stream"):
+        print(f"⚠️ Rejecting unexpected path: {path}")
+        await websocket.close(code=1008, reason="Expected /media-stream")
+        return
 
-        async with websockets.connect(GEMINI_LIVE_URL) as gemini_ws:
-            print("✅ Connected to Gemini Live")
+    await handle_twilio_stream(websocket)
 
-            # Send setup message to Gemini
-            setup = {
-                "setup": {
-                    "model": "gemini-3.1-flash-live-preview",
-                    "generation_config": {
-                        "response_modalities": ["AUDIO"]
-                    }
-                }
-            }
-            await gemini_ws.send(json.dumps(setup))
-            print("📤 Sent Gemini setup")
-
-            # Main loop: forward audio both ways
-            while True:
-                try:
-                    # Receive from Twilio
-                    message = await asyncio.wait_for(websocket.recv(), timeout=5.0)
-                    data = json.loads(message)
-                    event = data.get("event")
-
-                    if event == "start":
-                        print("📞 Call started")
-                    elif event == "media":
-                        # Forward audio to Gemini
-                        audio_payload = data["media"]["payload"]
-                        await gemini_ws.send(json.dumps({
-                            "realtime_input": {
-                                "media_chunks": [{
-                                    "data": audio_payload,
-                                    "mime_type": "audio/pcm"
-                                }]
-                            }
-                        }))
-                    elif event == "stop":
-                        print("📞 Call ended")
-                        break
-
-                    # Receive from Gemini and send to Twilio
-                    try:
-                        gemini_response = await asyncio.wait_for(gemini_ws.recv(), timeout=0.1)
-                        gemini_data = json.loads(gemini_response)
-                        if "audio" in gemini_data:
-                            await websocket.send(json.dumps({
-                                "event": "media",
-                                "media": {
-                                    "payload": gemini_data["audio"]
-                                }
-                            }))
-                    except asyncio.TimeoutError:
-                        # No Gemini audio right now, keep listening
-                        pass
-
-                except asyncio.TimeoutError:
-                    # No Twilio message, continue
-                    continue
-                except websockets.exceptions.ConnectionClosed:
-                    print("🔌 WebSocket connection closed by Twilio")
-                    break
-
-    except Exception as e:
-        print(f"❌ WebSocket error: {e}")
 
 async def main():
-    port = int(os.environ.get("WEBSOCKET_PORT", 8765))
-    print(f"🚀 WebSocket server starting on port {port}...")
-    async with websockets.serve(handle_twilio_stream, "0.0.0.0", port):
-        await asyncio.Future()  # Run forever
+    port = int(os.environ.get("PORT", os.environ.get("WEBSOCKET_PORT", 8765)))
+    host = os.environ.get("WEBSOCKET_HOST", "0.0.0.0")
+    print(
+        "⚠️  Standalone websocket_server.py — for local/ngrok use `python app.py` "
+        "so HTTP + WS share one port."
+    )
+    print(f"🚀 Twilio Media Stream WebSocket listening on ws://{host}:{port}/media-stream")
+
+    async with websockets.serve(
+        twilio_media_handler,
+        host,
+        port,
+        ping_interval=20,
+        ping_timeout=20,
+        max_size=8 * 1024 * 1024,
+    ):
+        await asyncio.Future()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,90 +1,136 @@
-# AI Receptionist for Auto Shops
+# AI Receptionist (V2) — Auto Shop Voice Agent
 
-An AI-powered phone assistant that handles 24/7 calls, answers FAQs, checks business hours, and books appointments directly into Google Calendar. Built with Twilio, Groq, and Google Calendar API.
+Real-time phone receptionist powered by **Twilio Media Streams** and **Gemini Live** native audio. One Flask process serves HTTP webhooks and the WebSocket audio bridge on port `5000`, so a single ngrok tunnel is enough for local development.
 
-## Live Demo
+**Live demo:** +1 (978) 357-2799
 
-Call: +1 (978) 357-2799
+Try asking:
+- “What are your hours?”
+- “I need an oil change tomorrow afternoon.”
+- “Book me with Sarah.”
 
-Try it yourself — say something like:
-- "What are your hours?"
-- "Book an appointment for tomorrow at 10 AM."
-- "Do you offer oil changes?"
+---
 
 ## Features
 
-- Voice call handling with natural conversation
-- FAQ answering from a knowledge base
-- Business hours (Mon-Fri 7:30-16:30, Sat 8-17, closed Sun)
-- Google Calendar booking with availability checks
-- SMS verification (A2P 10DLC approved)
-- Rate limiting (10 calls per 60 seconds)
-- Idempotency to prevent duplicate bookings
-- Call logging with SQLite
-- Metrics endpoint for monitoring
-- SMS calendar invites via Google Calendar link
-- Twilio signature verification for security
-- Hybrid caller ID detection
+- **Native audio streaming** — Bidirectional mulaw ↔ PCM bridge between Twilio and Gemini Live (voice: Aoede). Low-latency conversation, not turn-based STT → LLM → TTS.
+- **Mock advisor scheduling** — Availability lives in `advisors.json` (Mike / Sarah / Jordan). The `check_calendar` tool finds a free slot, suggests alternatives, and removes booked times so they can’t double-book.
+- **SMS confirmation** — On a successful book, Twilio sends an SMS with a Google Calendar *template* link (no Google Calendar API write). Caller ID is passed on the Stream URL so the model doesn’t need the number dictated.
+- Business hours awareness (Mon–Fri 7:30–4:30, Sat 8–5, closed Sun)
+- FAQ knowledge base (`faq.json`)
+- Rate limiting, call logging (SQLite), `/metrics` and `/health`
 
-## Tech Stack
-
-- Python 3.11 + Flask
-- Twilio (voice + SMS)
-- Groq (Llama 3.1 8B)
-- Google Calendar API
-- SQLite
-- Render (deployment)
+---
 
 ## Architecture
 
-Caller -> Twilio -> Flask App (Render) -> Groq (LLM)
-                                    -> Google Calendar API
-                                    -> SQLite (logging)
-                                    -> SMS (Twilio)
+```
+Caller
+  └─ Twilio Voice
+       └─ POST /voice  →  TwiML <Connect><Stream>
+            └─ wss://…/media-stream?caller=+1…
+                 └─ flask-sock (same process / port as Flask)
+                      └─ gemini_live_handler
+                           ├─ Twilio  mulaw 8 kHz  →  PCM 16 kHz  →  Gemini Live
+                           └─ Gemini  PCM 24 kHz  →  mulaw 8 kHz  →  Twilio
+                           └─ tools: check_calendar, hang_up
+                                └─ advisors.json + Twilio SMS invite
+```
+
+**Shared port.** `flask-sock` mounts `/media-stream` on the same Flask app that handles `/voice`. HTTP and WebSocket share port `5000`, so one public URL (ngrok or production host) covers both the voice webhook and the media stream.
+
+**Audio transcoding.** Twilio Media Streams send base64 µ-law at 8 kHz. Gemini Live expects 16-bit PCM in at 16 kHz and returns PCM at 24 kHz. `gemini_live_handler` uses `audioop` (`audioop-lts` on Python 3.13+) to decode µ-law → linear PCM, resample, and reverse the path for playback.
+
+---
+
+## Setup Instructions
+
+### 1. Prerequisites
+
+- Python 3.11+ (3.13 needs `audioop-lts`, already in `requirements.txt`)
+- A [Twilio](https://www.twilio.com/) account with a voice-capable number (SMS enabled for confirmations)
+- A [Gemini API key](https://aistudio.google.com/) with Live / native-audio access
+- [ngrok](https://ngrok.com/) (or another tunnel) for local Twilio webhooks
+
+### 2. Install
+
+```bash
+python -m venv venv
+# Windows
+.\venv\Scripts\activate
+# macOS / Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+cp .env.example .env   # then fill in real values
+```
+
+Edit `advisors.json` if you want different advisors or slots.
+
+### 3. Run locally
+
+```bash
+python app.py
+```
+
+The app listens on `0.0.0.0:5000`.
+
+### 4. Expose with ngrok
+
+```bash
+ngrok http 5000
+```
+
+Copy the HTTPS hostname (e.g. `spilt-jigsaw-nearly.ngrok-free.dev`) and set in `.env`:
+
+```env
+MEDIA_STREAM_URL=wss://YOUR_NGROK_HOST/media-stream
+```
+
+(Or set `NGROK_DOMAIN=YOUR_NGROK_HOST` and omit `MEDIA_STREAM_URL`.)
+
+### 5. Point Twilio at your tunnel
+
+In the Twilio Console → Phone Numbers → your number:
+
+| Setting | Value |
+|---|---|
+| A call comes in | Webhook · `https://YOUR_NGROK_HOST/voice` · HTTP POST |
+
+Restart `app.py` after changing `.env`, place a call, and you should see `/voice` then a `/media-stream` WebSocket connect in the logs.
+
+---
 
 ## Environment Variables
 
-Create a .env file with:
+Copy `.env.example` → `.env`. Required keys used by `app.py` / `gemini_live_handler.py`:
 
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_PHONE_NUMBER=+19783572799
-GROQ_API_KEY=your_groq_key
-GOOGLE_APPLICATION_CREDENTIALS_JSON={"type":"service_account",...}
-CALENDAR_ID=your_email@gmail.com
-FLASK_SECRET_KEY=your_secret_key
-METRICS_KEY=your_metrics_key (optional)
+| Variable | Required | Description |
+|---|---|---|
+| `GEMINI_API_KEY` | Yes | Google AI Studio key for Gemini Live WebSocket |
+| `TWILIO_ACCOUNT_SID` | Yes | Twilio Account SID |
+| `TWILIO_AUTH_TOKEN` | Yes | Twilio Auth Token |
+| `TWILIO_PHONE_NUMBER` | Yes | E.164 number that sends booking SMS |
+| `FLASK_SECRET_KEY` | Yes | Flask session secret (long random string) |
+| `METRICS_KEY` | Yes* | Shared secret for `GET /metrics?key=…` |
+| `MEDIA_STREAM_URL` | Recommended | Full `wss://…/media-stream` URL Twilio should open |
+| `NGROK_DOMAIN` | Optional | Hostname-only fallback if `MEDIA_STREAM_URL` is unset |
+| `GEMINI_LIVE_MODEL` | Optional | Overrides default Live native-audio model id |
 
-## Deployment
+\*If unset, `/metrics` rejects all requests.
 
-Deployed on Render.
+---
 
-1. Push code to GitHub
-2. Connect repository to Render
-3. Set environment variables in Render dashboard
-4. Deploy
+## Tech Stack
 
-## Security & Monitoring
+- Python · Flask · flask-sock
+- Twilio Voice + Media Streams + SMS
+- Gemini Live (`BidiGenerateContent`, native audio)
+- SQLite (call logs / idempotency)
+- ngrok (local) · Render-ready (`gunicorn` in requirements)
 
-- **Twilio Signature Verification** – All incoming requests are validated to prevent spoofing.
-- **Rate Limiting** – 10 requests per 60 seconds per caller ID.
-- **Idempotency** – Prevents duplicate bookings using a composite key (caller ID + appointment time).
-- **Call Logging** – Every call is logged to SQLite for auditing.
-- **Metrics Endpoint** – `/metrics?key=<secret>` exposes total calls, total bookings, and 7‑day booking trends.
-- **Health Check** – `/health` endpoint for uptime monitoring.
-- **Robots.txt** – Disallows search engine crawling.
-
-## Testing
-
-Call the Twilio number and complete a full booking:
-1. Say your phone number
-2. Receive SMS verification code
-3. Say the code back
-4. Book an appointment (e.g., "tomorrow at 10 AM")
-5. Receive SMS confirmation with calendar invite link
+---
 
 ## License
 
 MIT — free to use and modify.
-
-Built as a portfolio project to demonstrate AI + voice + calendar integration in production.

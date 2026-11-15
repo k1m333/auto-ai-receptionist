@@ -1,0 +1,32 @@
+{
+  "advisors": [
+    {
+      "id": "adv_001",
+      "name": "Mike",
+      "specialty": "Oil Changes & Brakes",
+      "available_slots": [
+        "2026-11-16T10:30:00",
+        "2026-11-16T14:00:00",
+        "2026-11-17T09:00:00"
+      ]
+    },
+    {
+      "id": "adv_002",
+      "name": "Sarah",
+      "specialty": "Engine Diagnostics",
+      "available_slots": [
+        "2026-11-16T11:00:00",
+        "2026-11-16T15:00:00"
+      ]
+    },
+    {
+      "id": "adv_003",
+      "name": "Jordan",
+      "specialty": "Tire & Alignment",
+      "available_slots": [
+        "2026-11-16T08:30:00",
+        "2026-11-16T12:00:00"
+      ]
+    }
+  ]
+}
