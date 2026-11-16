@@ -1,5 +1,6 @@
 Flask
 flask-sock
+Flask-Limiter
 twilio
 google-generativeai
 python-dotenv

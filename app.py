@@ -17,9 +17,13 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from dotenv import load_dotenv
 from flask import Flask, Response, request
+from flask_limiter import Limiter
+from flask_limiter.errors import RateLimitExceeded
+from flask_limiter.util import get_remote_address
 from flask_sock import Sock
 from twilio.rest import Client
 from twilio.twiml.voice_response import Connect, VoiceResponse
+from werkzeug.exceptions import HTTPException
 
 from gemini_live_handler import run_twilio_stream_sync
 
@@ -97,6 +101,11 @@ if not _flask_secret:
         "FLASK_SECRET_KEY not set — using an ephemeral key (sessions won't survive restarts)"
     )
 app.secret_key = _flask_secret
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+)
 sock = Sock(app)
 
 faq_cache: dict = {}
@@ -191,18 +200,22 @@ def get_media_stream_url(caller: str | None = None) -> str:
 # Core Twilio routes (logic preserved)
 # ---------------------------------------------------------------------------
 
+@app.errorhandler(RateLimitExceeded)
+def ratelimit_handler(_error: RateLimitExceeded):
+    """Twilio drops the call immediately when /voice is rate-limited."""
+    resp = VoiceResponse()
+    resp.reject()
+    logger.warning("Rate limit exceeded — rejecting call with TwiML <Reject />")
+    return Response(str(resp), mimetype="text/xml", status=429)
+
+
 @app.route("/voice", methods=["POST"])
+@limiter.limit("5 per minute")
 def voice():
     """Twilio voice webhook — connect the call to the Gemini Live media stream."""
     try:
-        # === RATE LIMITING ===
         # Prefer From (E.164), fall back to Caller
         caller_id = request.form.get("From") or request.form.get("Caller") or "unknown"
-        if is_rate_limited(caller_id):
-            resp = VoiceResponse()
-            resp.say(RATE_LIMIT_MESSAGE, voice=TWILIO_VOICE)
-            resp.hangup()
-            return Response(str(resp), mimetype="text/xml")
 
         # === CALL LOGGING ===
         call_sid = request.values.get("CallSid", "unknown")
@@ -231,7 +244,8 @@ def voice():
         media_url = get_media_stream_url()
         resp = VoiceResponse()
         connect = Connect()
-        stream = connect.stream(url=media_url)
+        # maxDuration=300 forces Twilio to end the stream/call after 5 minutes.
+        stream = connect.stream(url=media_url, max_duration=300)
         stream.parameter(name="echoCancellation", value="true")
         if caller_id and caller_id != "unknown":
             stream.parameter(name="caller", value=caller_id)
@@ -404,6 +418,14 @@ def send_sms(
 # Ops / legal routes
 # ---------------------------------------------------------------------------
 
+@app.route("/", methods=["GET"])
+def index():
+    return {
+        "status": "ok",
+        "message": "AI Receptionist is running",
+    }
+
+
 @app.route("/privacy", methods=["GET"])
 def privacy():
     return PRIVACY_HTML
@@ -455,9 +477,18 @@ def robots():
     return ROBOTS_TXT
 
 
+@app.errorhandler(404)
+def not_found(_error):
+    """Quiet 404s — no traceback spam when scanners/tools hit unknown paths."""
+    return {"error": "Not Found"}, 404
+
+
 @app.errorhandler(Exception)
 def handle_unexpected_error(exc):
     """Last-resort guard so uncaught exceptions don't take down the worker silently."""
+    # Let HTTP errors (404, 429, …) use their dedicated handlers — do not traceback.
+    if isinstance(exc, HTTPException):
+        return exc
     logger.exception("Unhandled Flask exception: %s", exc)
     return {"error": "internal_error"}, 500
 

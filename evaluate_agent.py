@@ -119,11 +119,6 @@ def check_calendar_readonly(
     )
 
 
-def hang_up(reason: str = "eval_noop") -> dict:
-    """Stub hang_up so the agent has the same tool surface as production."""
-    return {"ok": True, "status": "hung_up", "reason": reason}
-
-
 # ---------------------------------------------------------------------------
 # 1) Tool logic tests
 # ---------------------------------------------------------------------------
@@ -277,8 +272,6 @@ def _run_tool(name: str, args: dict) -> dict:
                 "start_time", "book", "caller_name", "caller_phone", "advisor"
             }
         })
-    if name == "hang_up":
-        return hang_up(**{k: v for k, v in args.items() if k == "reason"})
     return {"ok": False, "error": f"Unknown tool: {name}"}
 
 
@@ -288,7 +281,7 @@ def run_agent(prompt: str) -> str:
     model = genai.GenerativeModel(
         model_name=EVAL_MODEL,
         system_instruction=system_instruction,
-        tools=[check_calendar_readonly, hang_up],
+        tools=[check_calendar_readonly],
     )
     chat = model.start_chat()
     response = chat.send_message(prompt)

@@ -131,6 +131,17 @@ Copy `.env.example` → `.env`. Required keys used by `app.py` / `gemini_live_ha
 
 ---
 
+### Troubleshooting
+
+**Port 5000 is already in use (`OSError: [WinError 10048]`)**
+If a previous Python process crashed or didn't close cleanly, it may still be holding onto port 5000. You can force-kill all hanging Python processes in PowerShell:
+```powershell
+Get-Process python* | Stop-Process -Force
+```
+(For macOS/Linux users, use ```killall python```)
+
+---
+
 ## License
 
 MIT — free to use and modify.
